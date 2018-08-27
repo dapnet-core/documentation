@@ -967,13 +967,13 @@ Return all details just of transmitter <transmittername>.
 \subsubsection{GET /transmitters/transmitternames}
 Return an JSON array of all transmitter names. Used where selections have to be done on the website.
 
-\subsubsection{POST /transmitters/bootstrap}
+\subsubsection{POST /transmitters/\_bootstrap}
 \label{protcoldef:transmitters:bootstrap}
 \texttt{POST /transmitter/bootstrap}
 \begin{lstlisting}
 {
   "callsign": "db0avr",
-  "auth_key": "<secret>",
+  "auth_key": "<secretInCleartext>",
   "software": {
     "name": "UniPager",
     "version": "1.0.2"
@@ -981,8 +981,11 @@ Return an JSON array of all transmitter names. Used where selections have to be 
 }
 \end{lstlisting}
 
-\textbf{Answers to the bootstrap REST call}
+\textbf{Answers from the bootstrap REST call}
+The application type shall be \verb|application/json|.
 
+
+\todo{Was mag denn hier der Port sein?}
 \texttt{200 OK}
 \begin{lstlisting}
 {
@@ -1002,7 +1005,7 @@ Return an JSON array of all transmitter names. Used where selections have to be 
 \texttt{423 Locked}
 \begin{lstlisting}
 {
-  "error": "Transmitter temporarily disabled by config."
+  "error": "Transmitter temporarily disabled by configuration."
 }
 \end{lstlisting}
 
@@ -1014,17 +1017,19 @@ Return an JSON array of all transmitter names. Used where selections have to be 
 \end{lstlisting}
 
 
-\subsubsection{POST /transmitters/heartbeat}
+\subsubsection{POST /transmitters/\_heartbeat}
 \texttt{POST /transmitter/heartbeat}
 \begin{lstlisting}
 {
   "callsign": "db0avr",
-  "auth_key": "<secret>",
+  "auth_key": "<secretInCleartext>",
   "ntp_synced": true
 }
 \end{lstlisting}
 
-\textbf{Answers to the heartbeat REST call}
+\textbf{Answers from the heartbeat REST call}
+The application type shall be \verb|application/json|.
+
 \texttt{200 OK}
 \begin{lstlisting}
 {
