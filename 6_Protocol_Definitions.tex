@@ -309,31 +309,32 @@ Role \textbf{user} example result if owner of node or role \textbf{admin} or \te
 }
 \end{lstlisting}
 
-\subsubsection{GET /nodes/\_nodenames}
-\label{protocoldef:microservicesapi:database:getnodes/_nodenames}
+\subsubsection{GET /nodes/\_names}
+\label{protocoldef:microservicesapi:database:getnodes/_names}
 Return just an JSON array of all nodenames. Used where selections have to be done on the website.
 For all roles example result:
 
-Mapping to CouchDB: \verb|GET /nodes/_design/nodes/_list/nodesnames/_all_docs|
+Mapping to CouchDB: \verb|GET /nodes/_design/nodes/_list/names/byId|
 \begin{lstlisting}
 {
   ["db0sda-dc1", "db0sda-dc2"]
 }
 \end{lstlisting}
 
-\subsubsection{GET /nodes/\_nodenamedescription}
-\label{protocoldef:microservicesapi:database:getnodes/_nodenamesdescription}
-Return just an JSON array of all nodenames and their description. Used where selections have to be done on the website.
+\subsubsection{GET /nodes/\_description}
+\label{protocoldef:microservicesapi:database:getnodes/_descriptions}
+Return just an JSON array of all nodenames and their description, sorted as a list. Used where descriptive selections have to be done on the website.
 For all roles example result:
+Mapping to CouchDB: \verb|GET /nodes/_design/nodes/_list/descriptions/descriptions|
 \begin{lstlisting}
 {
   [
     {
-      "_id: "db0sda-dc1",
+      "_id": "db0sda-dc1",
       "description": "some words about that node"
     },
     {
-      "_id: "db0sda-dc2",
+      "_id": "db0sda-dc2",
       "description": "some words about that node"
     }
   ]  
@@ -477,10 +478,10 @@ Mapping to CouchDB :\\
 \verb|GET /rubrics/<rubricname>|
 
 
-\subsubsection{GET /rubrics/\_rubricnames}
-\label{protocoldef:microservicesapi:database:getrubrics/_rubricnames}
+\subsubsection{GET /rubrics/\_names}
+\label{protocoldef:microservicesapi:database:getrubrics/_names}
 Return just an JSON array of all rubricnames in a JSON Array. Allowed with all roles. Used where selections have to be done on the website.
-Mapping to CouchDB: \verb|GET /rubrics/_design/rubrics/_list/rubricsnames/_all_docs|
+Mapping to CouchDB: \verb|GET /rubrics/_design/rubrics/_list/names/byId|
 
 For all roles example result:
 \begin{lstlisting}
@@ -489,20 +490,21 @@ For all roles example result:
 }
 \end{lstlisting}
 
-\subsubsection{GET /rubrics/\_rubricnamesdescription}
+\subsubsection{GET /rubrics/\_descriptions}
+\label{protocoldef:microservicesapi:database:getrubrics/_descriptions}
 Return just an JSON array of all rubricnames and their description in a JSON Array. Allowed with all roles. Used where selections have to be done on the website.
-Mapping to CouchDB: \verb|GET /rubrics/_design/rubrics/_list/rubricsnamesdescription/_all_docs|
+Mapping to CouchDB: \verb|GET /rubrics/_design/rubrics/_list/descriptions/descriptions|
 
 For all roles example result:
 \begin{lstlisting}
 {
   [
     {
-      "_id: "dl-hh",
+      "_id": "dl-hh",
       "description": "Germany, Hamburg"
     },
     {
-      "_id: "dl-by",
+      "_id": "dl-by",
       "description": "Bavaria"
     }
   ]  
@@ -673,10 +675,10 @@ Mapping to CouchDB :\\
 
 Filter output according to role as in section \ref{protocoldef:microservicesapi:database:subscribers}.
 
-\subsubsection{GET /subscribers/\_subscribernames}
+\subsubsection{GET /subscribers/\_names}
 Return just an JSON array of all subscribers. Used where selections have to be done on the website.\\
 Mapping to CouchDB with filtering in microservice:\\
-\verb|GET /subscribers/_design/subscribers/_list/subscribernames/_all_docs|
+\verb|GET /subscribers/_design/subscribers/_list/names/byId|
 
 All roles example result:
 \begin{lstlisting}
@@ -685,10 +687,10 @@ All roles example result:
 }
 \end{lstlisting}
 
-\subsubsection{GET /subscribers/\_subscribernamesdescription}
+\subsubsection{GET /subscribers/\_descriptions}
 Return just an JSON array of all subscribers and their description. Used where selections have to be done on the website.\\
 Mapping to CouchDB with filtering in microservice:\\
-\verb|GET /subscribers/_design/subscribers/_list/subscribernamesdescription/_all_docs|
+\verb|GET /subscribers/_design/subscribers/_list/descriptions/descriptions|
 
 All roles example result:
 \begin{lstlisting}
@@ -775,6 +777,17 @@ This is allowed for \textbf{all} roles.
 \begin{lstlisting}
 {
   ["dl.OV-G01","dl.rwth-afu"]
+}
+\end{lstlisting}
+
+\subsubsection{GET /transmitters/\_names}
+Return an JSON array of all transmitter names. Used where selections have to be done on the website.
+For all roles example result:
+
+Mapping to CouchDB: \verb|GET /transmitters/_design/transmitters/_list/names/byId|
+\begin{lstlisting}
+{
+  ["db0sda", "db0wa"]
 }
 \end{lstlisting}
 
@@ -963,9 +976,6 @@ Return all transmitters with all details in JSON format.
 \subsubsection{GET /transmitter/<transmittername>}
 \label{protocoldef:microservicesapi:database:gettransmittername}
 Return all details just of transmitter <transmittername>.
-
-\subsubsection{GET /transmitters/transmitternames}
-Return an JSON array of all transmitter names. Used where selections have to be done on the website.
 
 \subsubsection{POST /transmitters/\_bootstrap}
 \label{protcoldef:transmitters:bootstrap}
@@ -1293,16 +1303,17 @@ The following table defines for each role which actions are permitted.
 \end{table}
 
 \begin{table}[htbp]
-\label{tab:protocoldef:permissionmatrix:nodessdb}
+\label{tab:protocoldef:permissionmatrix:nodesdb}
   \begin{tabular}{|l|c|c|c|c|c|} \hline
     action             & admin & support & user & guest   & thirdparty.<X> \\ \hline \hline
     \verb|node.list|   & all   & all     & all  & limited & all  \\ \hline
     \verb|node.read|   & all   & all     & all  & none    & all  \\ \hline
+    \verb|node.read\_full|   & all   & all     & none  & none    & none  \\ \hline
     \verb|node.create| & all   & all     & none & none    & none \\ \hline
     \verb|node.update| & all   & all     & none & none    & none \\ \hline
     \verb|node.delete| & all   & all     & none & none    & none \\ \hline
   \end{tabular}
-  \caption{Role's permissions for nodess database}
+  \caption{Role's permissions for nodes database}
 \textbf{limited}: only \_id and location for map display
 \end{table}
 
