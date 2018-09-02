@@ -401,7 +401,7 @@ Mapping to CouchDB:\\
 \verb|GET /rubrics/_all_docs?include_docs=true|
 Filter couchDB output to produce just the output below:
 
-Role \textbf{admin} or \textbf{support} example result:
+All allowed roles example result:
 \begin{lstlisting}
 {
   "total_rows": 1,
@@ -410,34 +410,6 @@ Role \textbf{admin} or \textbf{support} example result:
     {
       "_id": "dx-kw",
       "_rev": "1-166c3257894d0aea8ee68c1861ca508a",
-      "number": 4,
-      "description": "DX Cluster Spots KW",
-      "label": "DX KW",
-      "transmitter_groups": [
-        "dl-hh"
-      ],
-      "transmitters": [
-        "db0abc"
-      ],
-      "cyclic_transmit": false,
-      "cyclic_transmit_interval": 0,
-      "owner": [
-        "dh3wr",
-        "dl1abc"
-      ]
-    }
-  ]
-}
-\end{lstlisting}
-
-Role \textbf{user} example result. All details but the \verb|_rev| are also given out to role \textbf{user}.
-\begin{lstlisting}
-{
-  "total_rows": 1,
-  "offset": 0,
-  "rows": [
-    {
-      "_id": "dx-kw",
       "number": 4,
       "description": "DX Cluster Spots KW",
       "label": "DX KW",
@@ -601,7 +573,7 @@ Role \textbf{admin} or \textbf{support} example result:
         "APRS",
         "BM"
       ],
-      "owner": [
+      "owners": [
         "dh3wr",
         "dl1abc"
       ],
@@ -632,7 +604,7 @@ Role \textbf{user} example result. If the user is one of the owners of a the sub
           "enabled": true
         }
       ],
-      "owner": [
+      "owners": [
         "dl1abc"
       ]
     },
@@ -653,7 +625,7 @@ Role \textbf{user} example result. If the user is one of the owners of a the sub
         "APRS",
         "BM"
       ],
-      "owner": [
+      "owners": [
         "dl1abc",
         "dh3wr"
       ],
@@ -1293,10 +1265,10 @@ The following table defines for each role which actions are permitted.
   \begin{tabular}{|l|c|c|c|c|c|} \hline
     action                        & admin & support & user      & guest & thirdparty.<X> \\ \hline \hline
     \verb|subscriber.list|        & all   & all     & all       & none  & all       \\ \hline
-    \verb|subscriber.read|        & all   & all     & if\_owner & none  & if\_owner \\ \hline
+    \verb|subscriber.read|        & all   & all     & limited & none  & limited \\ \hline
     \verb|subscriber.create|      & all   & all     & none      & none  & none      \\ \hline
-    \verb|subscriber.update|      & all   & all     & if\_owner & none  & if\_owner \\ \hline
-    \verb|subscriber.delete|      & all   & all     & if\_owner & none  & if\_owner \\ \hline
+    \verb|subscriber.update|      & all   & all     & limited & none  & limited \\ \hline
+    \verb|subscriber.delete|      & all   & all     & limited & none  & limited \\ \hline
     \verb|subscriber_groups.list| & all   & all     & all       & none  & all      \\ \hline
   \end{tabular}
   \caption{Role's permissions for subscribers database}
@@ -1306,7 +1278,7 @@ The following table defines for each role which actions are permitted.
 \label{tab:protocoldef:permissionmatrix:nodesdb}
   \begin{tabular}{|l|c|c|c|c|c|} \hline
     action             & admin & support & user & guest   & thirdparty.<X> \\ \hline \hline
-    \verb|node.list|   & all   & all     & all  & limited & all  \\ \hline
+    \verb|node.list|   & all   & all     & limited  & limited & all  \\ \hline
     \verb|node.read|   & all   & all     & all  & none    & all  \\ \hline
     \verb|node.read\_full|   & all   & all     & none  & none    & none  \\ \hline
     \verb|node.create| & all   & all     & none & none    & none \\ \hline
