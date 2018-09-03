@@ -34,9 +34,9 @@ Returns all users with all details in JSON format.\\
 
 Mapping to CouchDB:\\
 \verb|GET /users/_all_docs?include_docs=true|
-Filter couchDB output to produce just the output below:
+Filter couchDB output to produce just the output below. This implies to remove the \verb|password| key and value always.
 
-Role \textbf{admin} or \textbf{support} example result:
+Auth reponse is true:
 \begin{lstlisting}
 {
   "total_rows": 2,
@@ -50,21 +50,15 @@ Role \textbf{admin} or \textbf{support} example result:
       "enabled": true,
       "created_on": "2018-07-08T11:50:02.168325Z",
       "created_by": "dl2ic"
-    },
-    {
-      "_id": "dl2ic",
-      "_rev": "1-c0a6ecb1a60b58254e808fc68d61ec00",
-      "email": "mail@secret.de",
-      "roles": "admin",
-      "enabled": true,
-      "created_on": "2018-07-08T11:50:02.168325Z",
-      "created_by": "dh3wr"
-    }
+      "changed_on": "2018-07-08T11:50:02.168325Z",
+      "changed_by": "dl2ic
+    }, ...
   ]
 }
 \end{lstlisting}
 
-Role \textbf{user} example result: \verb|403 Forbidden|
+Auth response is false: example result: \verb|403 Forbidden|
+
 
 \subsubsection{GET /users/<username>}
 \label{protocoldef:microservicesapi:database:getusers/username}
@@ -83,7 +77,9 @@ Role \textbf{user} example result asking for her/himself or role \textbf{admin} 
   "roles": "user",
   "enabled": true,
   "created_on": "2018-07-08T11:50:02.168325Z",
-  "created_by": "dl2ic"
+  "created_by": "dl2ic",
+  "changed_on": "2018-07-08T11:50:02.168325Z",
+  "changed_by": "dl2ic
 }
 \end{lstlisting}
 
@@ -1200,7 +1196,7 @@ Answer:
 \label{protocoldef:Auth}
 The auth service provides authentication information to all other services. It works on the CouchDB and reads information from there.
 
-\subsubsection{Password hashed}
+\subsubsection{Password hashing}
 In version 1, the used hashing algorithm was \verb|PBKDF2WithHmacSHA1|. In DAPNET 2, the preferred algorithm is \verb|BCrypt|. In order not to send emails to every already registered user to update her/his password, both hashing algorithms are supported by the Auth Service. Anyway, as soon as a user sends its credentials and in the database, still the \verb|PBKDF\ hash is stored, it is updated with the corresponding hash in \verb|BCrypt| format.\\
 The format of the hash can be distinguished by the \verb|$2a$, $2b$| or \verb|$2y$|-Prefix. With this method, the transition happens transparently regarding the user.
 
@@ -1219,35 +1215,37 @@ A user can be part of multiple roles. The Auth service as to check for each perm
 \subsubsection{Permission matrix}
 The following table defines for each role which actions are permitted.
 
-
 \begin{table}[htbp]
 \label{tab:protocoldef:permissionmatrix:usersdb}
   \begin{tabular}{|l|c|c|c|c|c|} \hline
     action                  & admin & support & user      & guest & thirdparty.<X> \\ \hline \hline
     \verb|user.list|        & all   & all     & all       & none  & all       \\ \hline
-    \verb|user.read|        & all   & all     & if\_owner & none  & if\_owner \\ \hline
+    \verb|user.read|        & all   & all     & none   & none  & none \\ \hline
     \verb|user.create|      & all   & all     & none      & none  & none      \\ \hline
-    \verb|user.update|      & all   & all     & if\_owner & none  & if\_owner \\ \hline
-    \verb|user.delete|      & all   & all     & if\_owner & none  & if\_owner \\ \hline
+    \verb|user.update|      & all   & all     & limited & none  & limited \\ \hline
+    \verb|user.delete|      & all   & all     & limited & none  & limited \\ \hline
     \verb|user.change_role| & all   & none    & none      & none  & none      \\ \hline
   \end{tabular}
   \caption{Role's permissions for users database}
 \end{table}
+\textbf{limited}: \verb|_id, _rev, roles, email, created_on, created_by, changed_on, changed_by|
+
 
 \begin{table}[htbp]
 \label{tab:protocoldef:permissionmatrix:transmittersdb}
   \begin{tabular}{|l|c|c|c|c|c|} \hline
     action                         & admin & support & user      & guest    & thirdparty.<X> \\ \hline \hline
     \verb|transmitter.list|        & all   & all     & all       & limited & all       \\ \hline
-    \verb|transmitter.read|        & all   & all     & if\_owner & none     & if\_owner \\ \hline
+    \verb|transmitter.read|        & all   & all     & limited & none     & if\_owner \\ \hline
     \verb|transmitter.create|      & all   & all     & none      & none     & none      \\ \hline
-    \verb|transmitter.update|      & all   & all     & if\_owner & none     & if\_owner \\ \hline
-    \verb|transmitter.delete|      & all   & all     & if\_owner & none     & if\_owner \\ \hline \hline
+    \verb|transmitter.update|      & all   & all     & limited & none     & if\_owner \\ \hline
+    \verb|transmitter.delete|      & all   & all     & limited & none     & if\_owner \\ \hline \hline
     \verb|transmitter_groups.list| & all   & all     & all       & none     & all       \\ \hline
   \end{tabular}
   \caption{Role's permissions for transmitters database}
-\textbf{limited}: Just \_id, name, location, type, timeslots, owner, power for map display
 \end{table}
+
+\textbf{limited}: \verb|_id, _rev, usage, timeslots, power, owners, groups, emergency_power, coordinates, aprs_broadcast, enabled, auth_key, antenna, created_on, created_by, changed_on, changed_by| and sub-JSON-nodes of these keys.
 
 
 \begin{table}[htbp]
@@ -1363,7 +1361,7 @@ If the access granted, but limited to a subset of data, the answer is:\\
 \begin{lstlisting}
 {
   "access": false,
-  "limited_to": ["<field_id1>",...,"<field_idn>"]
+  "limited_to": [<field_id1>",...,"<field_idn>"]
 }
 \end{lstlisting}
 
