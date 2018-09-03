@@ -9,6 +9,7 @@ All HTTP(s) communication should be compress with gzip to reduce network load. T
 See \hyperref[internalprog:microservices]{Microservices definition}.
 
 \subsection{Filtering and pagination in detailed lists}
+\label{protocoldef:filteringandpagination}
 For the endpoints \verb|GET /users|, \verb|GET /nodes|, \verb|GET /transmitters| and \verb|GET /rubrics|, there are the following GET parameters available for pagination and filtering.
 
 \begin{table}[htbp]
@@ -27,16 +28,24 @@ For the endpoints \verb|GET /users|, \verb|GET /nodes|, \verb|GET /transmitters|
 
 \textbf{Attention:} The parameter \verb|?include_docs=true| has to be included by the Microservice where it is stated in the detailed description below.\\
 
+\newpage
 \subsection{Database Service}
 \subsubsection{GET /users}
 \label{protocoldef:microservicesapi:database:getusers}
-Returns all users with all details in JSON format.\\
 
-Mapping to CouchDB:\\
-\verb|GET /users/_all_docs?include_docs=true|
-Filter couchDB output to produce just the output below. This implies to remove the \verb|password| key and value always.
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Returns all users (depending on the filtering in \ref{protocoldef:filteringandpagination} in JSON format. \\ \hline
+    Permission         & \verb|user.read| \\ \hline
+    Mapping to CouchDB & \verb|GET /users/_all_docs?include_docs=true|\\ \hline
+  \end{tabular}
+\end{table}
 
-Auth reponse is true:
+\colorbox{red}{Special treatment for user database: The \texttt{password} field has always to be filtered out.}\\
+
+\textbf{Auth reponse: \texttt{true}:}
+
 \begin{lstlisting}
 {
   "total_rows": 2,
@@ -56,25 +65,62 @@ Auth reponse is true:
   ]
 }
 \end{lstlisting}
+\textit{Whitelist:} Transparent, no filtering needed\\
 
-Auth response is false: example result: \verb|403 Forbidden|
+\textbf{Auth reponse: \texttt{limited}:}\\
+If \verb|_id == <username>| output the corresponding document transparent. All other document's\\
+\textit{Whitelist:} \verb|_id, roles, enabled|
 
+\begin{lstlisting}
+{
+  "total_rows": 2,
+  "offset": 0,
+  "rows": [
+    {
+      "_id": "dh3wr",
+      "_rev": "1-09352254509c9ddf86e80fd83868d557",
+      "email": "ralf@secret.com",
+      "roles": ["user","admin"],
+      "enabled": true,
+      "created_on": "2018-07-08T11:50:02.168325Z",
+      "created_by": "dl2ic"
+      "changed_on": "2018-07-08T11:50:02.168325Z",
+      "changed_by": "dl2ic
+    },
+    {
+      "_id": "dl2abc",
+      "roles": ["user"],
+      "enabled": true
+    }
+  ]
+}
+\end{lstlisting}
 
+\textbf{Auth reponse: \texttt{false}:}\\
+Send \verb|403 Forbidden|.
+
+\newpage
 \subsubsection{GET /users/<username>}
 \label{protocoldef:microservicesapi:database:getusers/username}
-Return details of <username> in JSON format.\\
-Mapping to CouchDB :\\
-\verb|GET /users/<username>|
 
-Role \textbf{user} will get \verb|403 Forbidden|, if not asking for her/himself.
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Return details of <username> in JSON format. \\ \hline
+    Permission         & \verb|user.read/<username>| \\ \hline
+    Mapping to CouchDB & \verb|GET /users/<username>|\\ \hline
+  \end{tabular}
+\end{table}
 
-Role \textbf{user} example result asking for her/himself or role \textbf{admin} or \textbf{support}:
+\colorbox{red}{Special treatment for user database: The \texttt{password} field has always to be filtered out.}\\
+
+\textbf{Auth reponse: \texttt{true}:}
 \begin{lstlisting}
 {
   "_id": "dh3wr",
   "_rev": "1-09352254509c9ddf86e80fd83868d557",
   "email": "ralf@secret.com",
-  "roles": "user",
+  "roles": ["user"],
   "enabled": true,
   "created_on": "2018-07-08T11:50:02.168325Z",
   "created_by": "dl2ic",
@@ -83,40 +129,63 @@ Role \textbf{user} example result asking for her/himself or role \textbf{admin} 
 }
 \end{lstlisting}
 
+\textbf{Auth reponse: \texttt{limited}:}\\
+If \verb|_id == <username>| output the corresponding document transparent.\\
+If not:\\
+\textit{Whitelist:} \verb|_id, roles, enabled|
+
+\textbf{Auth reponse: \texttt{false}:}\\
+Send \verb|403 Forbidden|.
+
 
 \subsubsection{GET /users/\_usernames}
 \label{protocoldef:microservicesapi:database:getusers/_usernames}
-Return just an JSON array of all usernames. Used where selections have to be done on the website.\\
-Mapping to CouchDB with filtering in microservice:\\
-\verb|GET /users/_design/users/_list/usernames/_all_docs|
 
-All roles example result:
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Return just an JSON array of all enabled usernames. Used where selections have to be done on the website. \\ \hline
+    Permission         & \verb|user.list| \\ \hline
+    Mapping to CouchDB & \verb|GET /users/_design/users/_list/usernames/byId|\\ \hline
+  \end{tabular}
+\end{table}
+
+\textbf{Auth reponse: \texttt{true}:}
 \begin{lstlisting}
 {
   ["dh3wr","dl2ic"]
 }
 \end{lstlisting}
 
+\textbf{Auth reponse: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
+\newpage
 \subsubsection{PUT /users - Add new user}
 \label{protocoldef:microservicesapi:database:putusers/username_create}
-Add the user <username>.
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Add a non-existing new user with \_id <username>\\ \hline
+    Permission         & \verb|user.create| \\ \hline
+    Mapping to CouchDB & \verb|PUT /users/<username>|\\ \hline
+    Mandatory fields   & \verb|_id, password, email, roles, enabled| \\ \hline
+  \end{tabular}
+\end{table}
 
-Role \textbf{admin} or \textbf{support} or editing the requestor's own entry are the only allowed roles.
-
-User to API: Example content to add user dl6pt
+\textbf{Auth reponse: \texttt{true}:}
+User to Database-Service: Example content to add user dl6pt
 \begin{lstlisting}
 {
   "_id" : "dl6pt",
   "password": "$2y$12$lqUueRVo94f439Tt7zqrZOHPfm6YoBzNawWLLIykF3nMip3L6mxLK",
   "email": "ralf@secret.com",
   "roles": "admin",
-  "enabled": true,
+  "enabled": true
 }
 \end{lstlisting}
 
-Mapping to CouchDB with adding information by microservice:\\
-\verb|PUT /users/<username>|
-
+Mapping to CouchDB with adding \verb|created_*| information by database microservice:\\
 \begin{lstlisting}
 {
   "_id" : "dl6pt",
@@ -125,50 +194,78 @@ Mapping to CouchDB with adding information by microservice:\\
   "admin": "admin",
   "enabled": true,
   "created_on": "2018-07-08T11:50:02.168325Z",
-  "created_by": "dl2ic"
+  "created_by": <username from basic-auth>
 }
 \end{lstlisting}
-The \verb|created_by| and \verb|created_on| content has to be added by the microservice.
+
+\textbf{Auth reponse: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
 
 
 \subsubsection{PUT /users - Edit existing user}
 \label{protocoldef:microservicesapi:database:putusers/username_update}
-Edit the existing user <username>. Just the changed values have to be sent. The \verb|_id| and \verb|_rev| must be sent always.
+Edit is differentiated from create by the presence of the \colorbox{red}{\texttt{\_rev}} field.
 
-Role \textbf{admin} or \textbf{support} or editing the requestor's own entry are the only allowed roles. Other requests result in returning \verb|403 Forbidden|.
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Edit the existing user <username>.\\ \hline
+    Permission         & \verb|user.update/<username>| \\ \hline
+    Mapping to CouchDB & \verb|PUT /users/<username>|\\ \hline
+    Mandatory fields   & \verb|_id, _rev| (\verb|\rev| has to be obtained by \ref{protocoldef:microservicesapi:database:getusers/username}\\ \hline
+    Optional fields    & \verb|password, email, roles, enabled| (minimum one)\\ \hline
+  \end{tabular}
+\end{table}
 
-User to API: Example content to edit user:\\
-First get the user's revision as in \ref{protocoldef:microservicesapi:database:getusers/username}.
-
-Then generate \verb|PUT| request with content:
+\textbf{Auth reponse: \texttt{true}:}
+User to Database-Service: Example content to edit user dl6pt setting new password
 \begin{lstlisting}
 {
   "_id" : "dl6pt",
   "_rev": "1-09352254509c9ddf86e80fd83868d557",
   "password": "$2y$12$lqUueRVo94f439Tt7zqrZOHPfm6YoBzNawWLLIykF3nMip3L6mxLK",
-  "email": "ralf@secret.com",
-  "roles": "support",
-  "enabled": true,
 }
 \end{lstlisting}
 
-Mapping to CouchDB with adding information by microservice:\\
+
+Mapping to CouchDB with adding \verb|updated_*| information by database microservice:\\
 \verb|PUT /users/<username>|
 \begin{lstlisting}
 {
   "_id" : "dl6pt",
   "_rev": "1-09352254509c9ddf86e80fd83868d557",
   "password": "$2y$12$lqUueRVo94f439Tt7zqrZOHPfm6YoBzNawWLLIykF3nMip3L6mxLK",
-  "email": "ralf@secret.com",
-  "roles": "support",
-  "enabled": true,
-  "created_on": "2018-07-08T11:50:02.168325Z",
-  "created_by": "dl2ic"
+  "updated_on": "2018-07-08T11:50:02.168325Z",
+  "updated_by": <username from basic-auth>
 }
 \end{lstlisting}
 
+\textbf{Auth reponse: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
+\colorbox{red}{Special treatment if field \texttt{roles} is present:}\\
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Edit the existing user <username>.\\ \hline
+    \colorbox{red}{Permission}         & \verb|user.change\_role/<username>| \\ \hline
+    Mapping to CouchDB & \verb|PUT /users/<username>|\\ \hline
+    Mandatory fields   & \verb|_id, _rev, roles| (\verb|\rev| has to be obtained by \ref{protocoldef:microservicesapi:database:getusers/username}\\ \hline
+    Optional fields    & \verb|password, email, roles, enabled| (minimum one)\\ \hline
+  \end{tabular}
+\end{table}
+
+\textbf{Auth reponse: \texttt{true}:}\\
+Same behavior as before.
+
+\textbf{Auth reponse: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
+
 \subsubsection{DELETE /users/<username>?rev=}
 \label{protocoldef:microservicesapi:database:deleteusers}
+\todo{transfer into new format}
+
 Delete user <username>. The Database Service has be make sure that all dependencies of a user account are deleted as well, for example transmitters subscribers or rubrics, that contain \textbf{just} this <username> as owner as the only one entry (left).
 
 Role \textbf{admin} or \textbf{support} or deleting the requestor's own entry are the only allowed roles. Others get as return message \verb|403 Forbidden|.
@@ -182,6 +279,9 @@ Mapping to CouchDB: direct forward of request
 \subsubsection{GET /nodes}
 \label{protocoldef:microservicesapi:database:getnodes}
 Returns all nodes with all details in JSON format.
+
+\textbf{limited}: only \_id and location for map display
+
 
 Mapping to CouchDB:\\
 \verb|GET /nodes/_all_docs?include_docs=true|
@@ -749,6 +849,10 @@ This is allowed for \textbf{all} roles.
 \end{lstlisting}
 
 \subsubsection{GET /transmitters/\_names}
+
+\textbf{limited}: \verb|_id, _rev, usage, timeslots, power, owners, groups, emergency_power, coordinates, aprs_broadcast, enabled, auth_key, antenna, created_on, created_by, changed_on, changed_by| and sub-JSON-nodes of these keys.
+
+
 Return an JSON array of all transmitter names. Used where selections have to be done on the website.
 For all roles example result:
 
@@ -1191,7 +1295,7 @@ Answer:
 
 \todo{On the calls and rubric content changes: Always increasing counter link traffic on network device or reset at 00:00 am?}
 
-
+\newpage
 \subsection{Auth Service}
 \label{protocoldef:Auth}
 The auth service provides authentication information to all other services. It works on the CouchDB and reads information from there.
@@ -1202,17 +1306,59 @@ The format of the hash can be distinguished by the \verb|$2a$, $2b$| or \verb|$2
 
 \subsubsection{Role definition}
 The following roles are available:
-\begin{description}
-\item[user] This is a normal user with the possibility of being owner of a subscriber association and transmitters.
-\item[support] Trustworthy volunteer that is working on the user support, e.g. the ticket system. Can manage user, transmitter, subscriber and rubric settings.
-\item[admin] Can to everything, especially create new nodes.
-\item[thirdparty.<X>] A machine interface user being able to subscribe to the third party MQTT topics for service <X>. Examples are APRS or Brandmeister.
-\end{description}
+\begin{table}[htbp!]
+\label{tab:protocoldef:permissionmatrix:roledefinition}
+  \begin{tabular}{|l|p{11cm}|} \hline
+    Name                  & Description \\ \hline \hline
+    \verb|user|           & This is a normal user with the possibility of being owner of a subscriber association and transmitters. \\ \hline
+    \verb|support|        & Trustworthy volunteer that is working on the user support, e.g. the ticket system. Can manage user, transmitter, subscriber and rubric settings. \\ \hline
+    \verb|admin|          & Can do everything, especially create new nodes. \\ \hline
+    \verb|thirdparty.<X>| & A machine interface user being able to subscribe to the third party MQTT topics for service <X>. Examples are APRS or Brandmeister. \\ \hline
+    \verb|guest|          & Any other request making entity. \\ \hline
+  \end{tabular}
+  \caption{Role definition}
+\end{table}
+\FloatBarrier
 
 A user can be part of multiple roles. The Auth service as to check for each permission, if at least one of the roles allows it. Otherwise it is denied.
 
+\subsubsection{Permission definition}
+The following permissions are available:
+
+\begin{table}[htbp!]
+\label{tab:protocoldef:permissionmatrix:permissiondefinition}
+  \begin{tabular}{|l|p{11cm}|} \hline
+    Name            & Description \\ \hline \hline
+    \verb|all|      & All data access and modification allowed.  \\ \hline
+    \verb|none|     & Data access and modification forbidden. \\ \hline
+    \verb|if_owner| & Data modification allowed, if asking username is in \verb|owners| list of the entity. \\ \hline
+    \verb|limited|  & Data access is restricted. The consuming service has to define what that means in detail. \\ \hline
+  \end{tabular}
+  \caption{Permission definition}
+\end{table}
+\FloatBarrier
+
+
+\subsubsection{Permission naming definition}
+The name of the permission has the following significance:
+\begin{table}[htbp!]
+\label{tab:protocoldef:permissionmatrix:permissionnamingdefinition}
+  \begin{tabular}{|l|p{11cm}|} \hline
+    Name                      & Description \\ \hline \hline
+    \verb|*.list|             & Get an array of all \_ids or further summary data. Used for selections by users. \\
+    \hline
+    \verb|*.read|             & Get one or many documents in complete or limited version. A white list defined in the corresponding section of this document is given for the limited case. \\ \hline
+    \verb|*.create|           & Create a new document. \\ \hline
+    \verb|*.update|           & Modify an existing document. \\ \hline
+    \verb|*.delete|           & Delete an existing document. \\ \hline
+    \verb|user.change_role|   & Change the \verb|roles| array of a user's entry. \\ \hline
+  \end{tabular}
+  \caption{Permission naming definition}
+\end{table}
+\FloatBarrier
 
 \subsubsection{Permission matrix}
+\label{protocoldef:permissionmatrix}
 The following table defines for each role which actions are permitted.
 
 \begin{table}[htbp]
@@ -1220,73 +1366,27 @@ The following table defines for each role which actions are permitted.
   \begin{tabular}{|l|c|c|c|c|c|} \hline
     action                  & admin & support & user      & guest & thirdparty.<X> \\ \hline \hline
     \verb|user.list|        & all   & all     & all       & none  & all       \\ \hline
-    \verb|user.read|        & all   & all     & none   & none  & none \\ \hline
+    \verb|user.read|        & all   & all     & limited   & none  & none \\ \hline
     \verb|user.create|      & all   & all     & none      & none  & none      \\ \hline
-    \verb|user.update|      & all   & all     & limited & none  & limited \\ \hline
-    \verb|user.delete|      & all   & all     & limited & none  & limited \\ \hline
+    \verb|user.update|      & all   & all     & if\_owner & none  & if\_owner \\ \hline
+    \verb|user.delete|      & all   & all     & if\_owner & none  & if\_owner \\ \hline
     \verb|user.change_role| & all   & none    & none      & none  & none      \\ \hline
   \end{tabular}
   \caption{Role's permissions for users database}
-\end{table}
-\textbf{limited}: \verb|_id, _rev, roles, email, created_on, created_by, changed_on, changed_by|
-
-
-\begin{table}[htbp]
-\label{tab:protocoldef:permissionmatrix:transmittersdb}
-  \begin{tabular}{|l|c|c|c|c|c|} \hline
-    action                         & admin & support & user      & guest    & thirdparty.<X> \\ \hline \hline
-    \verb|transmitter.list|        & all   & all     & all       & limited & all       \\ \hline
-    \verb|transmitter.read|        & all   & all     & limited & none     & if\_owner \\ \hline
-    \verb|transmitter.create|      & all   & all     & none      & none     & none      \\ \hline
-    \verb|transmitter.update|      & all   & all     & limited & none     & if\_owner \\ \hline
-    \verb|transmitter.delete|      & all   & all     & limited & none     & if\_owner \\ \hline \hline
-    \verb|transmitter_groups.list| & all   & all     & all       & none     & all       \\ \hline
-  \end{tabular}
-  \caption{Role's permissions for transmitters database}
-\end{table}
-
-\textbf{limited}: \verb|_id, _rev, usage, timeslots, power, owners, groups, emergency_power, coordinates, aprs_broadcast, enabled, auth_key, antenna, created_on, created_by, changed_on, changed_by| and sub-JSON-nodes of these keys.
-
-
-\begin{table}[htbp]
-\label{tab:protocoldef:permissionmatrix:transmitters}
-  \begin{tabular}{|l|p{7cm}|} \hline
-    action                                & comment \\ \hline \hline
-    \verb|transmitter.new_conn_post|      & if transmitter credentials are ok\\ \hline
-    \verb|transmitter.rabbitmq.subscribe| & if transmitter credentials are ok, for both RX of messages and TX of telemetry \\ \hline
-  \end{tabular}
-  \caption{Role's permissions for transmitters}
-\end{table}
-
-\begin{table}[htbp]
-\label{tab:protocoldef:permissionmatrix:subscribersdb}
-  \begin{tabular}{|l|c|c|c|c|c|} \hline
-    action                        & admin & support & user      & guest & thirdparty.<X> \\ \hline \hline
-    \verb|subscriber.list|        & all   & all     & all       & none  & all       \\ \hline
-    \verb|subscriber.read|        & all   & all     & limited & none  & limited \\ \hline
-    \verb|subscriber.create|      & all   & all     & none      & none  & none      \\ \hline
-    \verb|subscriber.update|      & all   & all     & limited & none  & limited \\ \hline
-    \verb|subscriber.delete|      & all   & all     & limited & none  & limited \\ \hline
-    \verb|subscriber_groups.list| & all   & all     & all       & none  & all      \\ \hline
-  \end{tabular}
-  \caption{Role's permissions for subscribers database}
 \end{table}
 
 \begin{table}[htbp]
 \label{tab:protocoldef:permissionmatrix:nodesdb}
   \begin{tabular}{|l|c|c|c|c|c|} \hline
-    action             & admin & support & user & guest   & thirdparty.<X> \\ \hline \hline
-    \verb|node.list|   & all   & all     & limited  & limited & all  \\ \hline
-    \verb|node.read|   & all   & all     & all  & none    & all  \\ \hline
-    \verb|node.read\_full|   & all   & all     & none  & none    & none  \\ \hline
-    \verb|node.create| & all   & all     & none & none    & none \\ \hline
-    \verb|node.update| & all   & all     & none & none    & none \\ \hline
-    \verb|node.delete| & all   & all     & none & none    & none \\ \hline
+    action             & admin & support & user    & guest   & thirdparty.<X> \\ \hline \hline
+    \verb|node.list|   & all   & all     & limited & limited & all  \\ \hline
+    \verb|node.read|   & all   & all     & limited & limited & all  \\ \hline
+    \verb|node.create| & all   & all     & none    & none    & none \\ \hline
+    \verb|node.update| & all   & all     & none    & none    & none \\ \hline
+    \verb|node.delete| & all   & all     & none    & none    & none \\ \hline
   \end{tabular}
   \caption{Role's permissions for nodes database}
-\textbf{limited}: only \_id and location for map display
 \end{table}
-
 
 \begin{table}[htbp]
 \label{tab:protocoldef:permissionmatrix:rubricdb}
@@ -1312,6 +1412,51 @@ The following table defines for each role which actions are permitted.
   \end{tabular}
   \caption{Role's permissions for news database}
 \end{table}
+
+
+\begin{table}[htbp]
+\label{tab:protocoldef:permissionmatrix:subscribersdb}
+  \begin{tabular}{|l|c|c|c|c|c|} \hline
+    action                        & admin & support & user      & guest & thirdparty.<X> \\ \hline \hline
+    \verb|subscriber.list|        & all   & all     & all       & none  & all            \\ \hline
+    \verb|subscriber.read|        & all   & all     & limited   & none  & limited        \\ \hline
+    \verb|subscriber.create|      & all   & all     & none      & none  & none           \\ \hline
+    \verb|subscriber.update|      & all   & all     & if\_owner & none  & if\_owner      \\ \hline
+    \verb|subscriber.delete|      & all   & all     & if\_owner & none  & if\_owner      \\ \hline
+    \verb|subscriber_groups.list| & all   & all     & all       & none  & all            \\ \hline
+  \end{tabular}
+  \caption{Role's permissions for subscribers database}
+\end{table}
+
+
+
+\begin{table}[htbp]
+\label{tab:protocoldef:permissionmatrix:transmittersdb}
+  \begin{tabular}{|l|c|c|c|c|c|} \hline
+    action                         & admin & support & user      & guest    & thirdparty.<X> \\ \hline \hline
+    \verb|transmitter.list|        & all   & all     & all       & limited  & all       \\ \hline
+    \verb|transmitter.read|        & all   & all     & limited   & none     & limited   \\ \hline
+    \verb|transmitter.create|      & all   & all     & none      & none     & none      \\ \hline
+    \verb|transmitter.update|      & all   & all     & if\_owner & none     & if\_owner \\ \hline
+    \verb|transmitter.delete|      & all   & all     & if\_owner & none     & if\_owner \\ \hline \hline
+    \verb|transmitter_groups.list| & all   & all     & all       & none     & all       \\ \hline
+  \end{tabular}
+  \caption{Role's permissions for transmitters database}
+\end{table}
+
+
+
+\begin{table}[htbp]
+\label{tab:protocoldef:permissionmatrix:transmitters}
+  \begin{tabular}{|l|p{7cm}|} \hline
+    action                                & comment \\ \hline \hline
+    \verb|transmitter.new_conn_post|      & If transmitter credentials are ok\\ \hline
+    \verb|transmitter.rabbitmq.subscribe| & If transmitter credentials are ok, for both RX of messages and TX of telemetry \\ \hline
+  \end{tabular}
+  \caption{Role's permissions for transmitters}
+\end{table}
+
+
 
 \begin{table}[htbp]
 \label{tab:protocoldef:permissionmatrix:websocket}
@@ -1351,25 +1496,93 @@ The following table states all Auth Service API calls and their description. The
  {"username": "<asking_user>", "password": "<asking_user's_password>"}
 \end{lstlisting}
 
-If the access is granted completely, the answer is:\\
-\verb| { "access": true }|
+There are two endpoints on the Auth service. One for overview of permissions and one explicitly answering, if a permission is granted.
 
-If the access is forbidden completely, the answer is:\\
-\verb| { "access": false }|
-
-If the access granted, but limited to a subset of data, the answer is:\\
+\textbf{POST /auth/users/login}\\
+This returns an detailed overview of all permissions of the user referred in the POST content. If a permission is not listed, it's implicitly \verb|none|. Example output:
 \begin{lstlisting}
 {
-  "access": false,
-  "limited_to": [<field_id1>",...,"<field_idn>"]
+  "user": {
+    "roles": [
+      "admin",
+      "support",
+      "user"
+    ],
+    "enabled": true,
+    "email": "mailmenot@dl2ic.de",
+    "created_on":"2018-07-08T11:50:02.168325Z",
+    "created_by": "dh3wr",
+    "_rev": "4-3ebbe52b3da83a2a6c1f8093efebdc07",
+    "_id": "dl2ic"
+  },
+  "permissions": {
+    "user.update": "all",
+    "user.read": "all",
+    "user.list": "all",
+    "user.delete": "all",
+    "user.create": "all",
+    "user.change\_role": "all",
+    "transmitter\_groups.list": "all",
+    "transmitter.update": "all",
+    "transmitter.read": "all",
+    "transmitter.list": "all",
+    "transmitter.delete": "all",
+    "transmitter.create": "all",
+    "subscriber\_groups.list": "all",
+    "subscriber.update": "all",
+    "subscriber.read": "all",
+    "subscriber.list": "all",
+    "subscriber.delete": "all",
+    "subscriber.create": "all",
+    "rubric.update": "all",
+    "rubric.read": "all",
+    "rubric.list": "all",
+    "rubric.delete": "all",
+    "rubric.create": "all",
+    "node.update": "all",
+    "node.read": "all",
+    "node.list": "all",
+    "node.delete": "all",
+    "node.create": "all",
+    "news.update": "all",
+    "news.read": "all",
+    "news.delete": "all",
+    "news.create": "all"
+  }
 }
 \end{lstlisting}
 
+\textbf{POST /auth/users/permissions/<permission>/<entity>}\\
+This is a explicit query endpoint for a specific <permission> as listed in section \ref{protocoldef:permissionmatrix}. The entity against the permission is applied is <entity>. Ownership \text{bf} is considered in this case by the Auth Service.
 
-A JSON array of available roles can be obtained without authentication by:\\
-\verb|GET /auth/roles|\\
+\textbf{POST /auth/users/permissions/<service>.read}\\
+This is a explicit query endpoint for a <service>.read permission grant to get one or many documents. Ownership is \textbf{NOT} considered in this case. The consuming service has to take care of adequate data handling.
 
-Returns a JSON array of roles, that are places in some of the users database documents.
+
+There are three possible answers:
+
+\textbf{Access is granted completely:}
+\begin{lstlisting}
+{ "access": true }
+\end{lstlisting}
+
+\textbf{Access is forbidden completely:}
+\begin{lstlisting}
+{ "access": false }
+\end{lstlisting}
+
+\textbf{Access granted, but limited to a subset of data:}
+\begin{lstlisting}
+{
+  "access": false,
+  "limited": true
+}
+\end{lstlisting}
+
+\colorbox{red}{If the \texttt{limited} key is not present, the access is still forbidden.}\\
+
+\textbf{GET /auth/roles}\\
+A JSON array of available roles can be obtained without authentication by.\\
 Example output:
 \begin{lstlisting}
 {
