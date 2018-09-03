@@ -38,13 +38,13 @@ For the endpoints \verb|GET /users|, \verb|GET /nodes|, \verb|GET /transmitters|
     Item               & Description  \\ \hline \hline
     Description        & Returns all users (depending on the filtering in \ref{protocoldef:filteringandpagination} in JSON format. \\ \hline
     Permission         & \verb|user.read| \\ \hline
-    Mapping to CouchDB & \verb|GET /users/_all_docs?include_docs=true|\\ \hline
+    Mapping to CouchDB & \verb|GET /users/_design/users/_view/byId?include_docs=true|\\ \hline
   \end{tabular}
 \end{table}
 
 \colorbox{red}{Special treatment for user database: The \texttt{password} field has always to be filtered out.}\\
 
-\textbf{Auth reponse: \texttt{true}:}
+\textbf{Auth response: \texttt{true}:}
 
 \begin{lstlisting}
 {
@@ -67,7 +67,7 @@ For the endpoints \verb|GET /users|, \verb|GET /nodes|, \verb|GET /transmitters|
 \end{lstlisting}
 \textit{Whitelist:} Transparent, no filtering needed\\
 
-\textbf{Auth reponse: \texttt{limited}:}\\
+\textbf{Auth response: \texttt{limited}:}\\
 If \verb|_id == <username>| output the corresponding document transparent. All other document's\\
 \textit{Whitelist:} \verb|_id, roles, enabled|
 
@@ -96,7 +96,7 @@ If \verb|_id == <username>| output the corresponding document transparent. All o
 }
 \end{lstlisting}
 
-\textbf{Auth reponse: \texttt{false}:}\\
+\textbf{Auth response: \texttt{false}:}\\
 Send \verb|403 Forbidden|.
 
 \newpage
@@ -114,7 +114,7 @@ Send \verb|403 Forbidden|.
 
 \colorbox{red}{Special treatment for user database: The \texttt{password} field has always to be filtered out.}\\
 
-\textbf{Auth reponse: \texttt{true}:}
+\textbf{Auth response: \texttt{true}:}
 \begin{lstlisting}
 {
   "_id": "dh3wr",
@@ -129,12 +129,12 @@ Send \verb|403 Forbidden|.
 }
 \end{lstlisting}
 
-\textbf{Auth reponse: \texttt{limited}:}\\
+\textbf{Auth response: \texttt{limited}:}\\
 If \verb|_id == <username>| output the corresponding document transparent.\\
 If not:\\
 \textit{Whitelist:} \verb|_id, roles, enabled|
 
-\textbf{Auth reponse: \texttt{false}:}\\
+\textbf{Auth response: \texttt{false}:}\\
 Send \verb|403 Forbidden|.
 
 
@@ -150,14 +150,12 @@ Send \verb|403 Forbidden|.
   \end{tabular}
 \end{table}
 
-\textbf{Auth reponse: \texttt{true}:}
+\textbf{Auth response: \texttt{true}:}
 \begin{lstlisting}
-{
-  ["dh3wr","dl2ic"]
-}
+["dh3wr","dl2ic"]
 \end{lstlisting}
 
-\textbf{Auth reponse: \texttt{false} or \texttt{limited}:}\\
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
 Send \verb|403 Forbidden|.
 
 \newpage
@@ -173,7 +171,7 @@ Send \verb|403 Forbidden|.
   \end{tabular}
 \end{table}
 
-\textbf{Auth reponse: \texttt{true}:}
+\textbf{Auth response: \texttt{true}:}
 User to Database-Service: Example content to add user dl6pt
 \begin{lstlisting}
 {
@@ -198,7 +196,7 @@ Mapping to CouchDB with adding \verb|created_*| information by database microser
 }
 \end{lstlisting}
 
-\textbf{Auth reponse: \texttt{false} or \texttt{limited}:}\\
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
 Send \verb|403 Forbidden|.
 
 
@@ -212,18 +210,18 @@ Edit is differentiated from create by the presence of the \colorbox{red}{\texttt
     Description        & Edit the existing user <username>.\\ \hline
     Permission         & \verb|user.update/<username>| \\ \hline
     Mapping to CouchDB & \verb|PUT /users/<username>|\\ \hline
-    Mandatory fields   & \verb|_id, _rev| (\verb|\rev| has to be obtained by \ref{protocoldef:microservicesapi:database:getusers/username}\\ \hline
+    Mandatory fields   & \verb|_id, _rev| (\verb|\rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:getusers/username})\\ \hline
     Optional fields    & \verb|password, email, roles, enabled| (minimum one)\\ \hline
   \end{tabular}
 \end{table}
 
-\textbf{Auth reponse: \texttt{true}:}
+\textbf{Auth response: \texttt{true}:}
 User to Database-Service: Example content to edit user dl6pt setting new password
 \begin{lstlisting}
 {
   "_id" : "dl6pt",
   "_rev": "1-09352254509c9ddf86e80fd83868d557",
-  "password": "$2y$12$lqUueRVo94f439Tt7zqrZOHPfm6YoBzNawWLLIykF3nMip3L6mxLK",
+  "password": "$2y$12$lqUueRVo94f439Tt7zqrZOHPfm6YoBzNawWLLIykF3nMip3L6mxLK"
 }
 \end{lstlisting}
 
@@ -240,54 +238,60 @@ Mapping to CouchDB with adding \verb|updated_*| information by database microser
 }
 \end{lstlisting}
 
-\textbf{Auth reponse: \texttt{false} or \texttt{limited}:}\\
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
 Send \verb|403 Forbidden|.
 
 \colorbox{red}{Special treatment if field \texttt{roles} is present:}\\
 \begin{table}[htbp]
   \begin{tabular}{|l|p{10cm}|} \hline
     Item               & Description  \\ \hline \hline
-    Description        & Edit the existing user <username>.\\ \hline
+    Description        & Edit the existing user <username>\\ \hline
     \colorbox{red}{Permission}         & \verb|user.change\_role/<username>| \\ \hline
     Mapping to CouchDB & \verb|PUT /users/<username>|\\ \hline
-    Mandatory fields   & \verb|_id, _rev, roles| (\verb|\rev| has to be obtained by \ref{protocoldef:microservicesapi:database:getusers/username}\\ \hline
+    Mandatory fields   & \verb|_id, _rev, roles| (\verb|\rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:getusers/username}\\ \hline
     Optional fields    & \verb|password, email, roles, enabled| (minimum one)\\ \hline
   \end{tabular}
 \end{table}
 
-\textbf{Auth reponse: \texttt{true}:}\\
+\textbf{Auth response: \texttt{true}:}\\
 Same behavior as before.
 
-\textbf{Auth reponse: \texttt{false} or \texttt{limited}:}\\
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
 Send \verb|403 Forbidden|.
 
 
-\subsubsection{DELETE /users/<username>?rev=}
+\subsubsection{DELETE /users/<username>?rev=<rev>}
 \label{protocoldef:microservicesapi:database:deleteusers}
-\todo{transfer into new format}
 
-Delete user <username>. The Database Service has be make sure that all dependencies of a user account are deleted as well, for example transmitters subscribers or rubrics, that contain \textbf{just} this <username> as owner as the only one entry (left).
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Delete user <username>\\ \hline
+    Permission         & \verb|user.delete/<username>| \\ \hline
+    Mapping to CouchDB & \verb|DELETE /users/<username>?rev=1-093...|\\ \hline
+    Mandatory fields   & \verb|_rev| as parameter (\verb|\rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:getusers/username})\\ \hline
+  \end{tabular}
+\end{table}
 
-Role \textbf{admin} or \textbf{support} or deleting the requestor's own entry are the only allowed roles. Others get as return message \verb|403 Forbidden|.
+\textbf{Auth response: \texttt{true}:}\\
+Transparent forwarding.
 
-First get the user's revision as in \ref{protocoldef:microservicesapi:database:getusername}.\\
-User to API: \verb|DELETE /users/<username>?rev=1-09352254509c9ddf86e80fd83868d557|
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
 
-Mapping to CouchDB: direct forward of request
-
-
+\newpage
 \subsubsection{GET /nodes}
 \label{protocoldef:microservicesapi:database:getnodes}
-Returns all nodes with all details in JSON format.
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        &  Returns all users (depending on the filtering in \ref{protocoldef:filteringandpagination} in JSON format. \\ \hline
+    Permission         & \verb|node.read| \\ \hline
+    Mapping to CouchDB & \verb|GET /users/_design/nodes/_view/byId?include_docs=true|\\ \hline
+  \end{tabular}
+\end{table}
 
-\textbf{limited}: only \_id and location for map display
-
-
-Mapping to CouchDB:\\
-\verb|GET /nodes/_all_docs?include_docs=true|
-Filter couchDB output to produce just the output below:
-
-Role \textbf{admin} or \textbf{support} example result:
+\textbf{Auth response: \texttt{true}:}\\
 \begin{lstlisting}
 {
   "total_rows": 2,
@@ -304,8 +308,7 @@ Role \textbf{admin} or \textbf{support} example result:
       "created_by": "dh3wr",
       "changed_on": "2018-07-03T08:00:52.786458Z",
       "changed_by": "dh3wr",
-      "owners": ["dl1abc","dh3wr","dl2ic"],
-      "avatar_picture": <couchdb attachment??>
+      "owners": ["dl1abc","dh3wr","dl2ic"]
     },
     {
       "_id": "db0sda-dc2",
@@ -318,16 +321,22 @@ Role \textbf{admin} or \textbf{support} example result:
       "created_by":"dh3wr",
       "changed_on": "2018-07-03T08:00:52.786458Z",
       "changed_by":"dh3wr",
-      "owners": ["dl1abc","dh3wr","dl2ic"],
-      "avatar_picture": <couchdb attachment??>
+      "owners": ["dl1abc","dh3wr","dl2ic"]
     }
   ]
 }
 \end{lstlisting}
 
-Role \textbf{user} example result. If the user is one of the owners of a node, display also the detail-Information, like in the second array entry. Here dh3wr is requesting.
-\begin{lstlisting}
+\textbf{Auth response: \texttt{limited}:}\\
+The output rows have to be checked, if the asking username is in the \texttt{owners} array.\\
 
+If yes: return the complete row.\\
+If not: return just the whitelisted fields:\\
+
+\textit{Whitelist:} \_id, coordinates, description, hamcloud, owners\\
+
+Example (here dh3wr is asking with limited permission):
+\begin{lstlisting}
 {
   "total_rows": 2,
   "offset": 0,
@@ -338,12 +347,7 @@ Role \textbf{user} example result. If the user is one of the owners of a node, d
       "coordinates": [34.123456, -23.123456],
       "description": "some words about that node",
       "hamcloud": true,
-      "created_on": "2018-07-03T08:00:52.786458Z",
-      "created_by":"dl2ic",
-      "changed_on": "2018-07-03T08:00:52.786458Z",
-      "changed_by":"dl2ic",
-      "owners": ["dl1abc","dl2ic"],
-      "avatar_picture": <couchdb attachment??>
+      "owners": ["dl1abc","dl2ic"]
     },
     {
       "_id": "db0sda-dc2",
@@ -356,38 +360,30 @@ Role \textbf{user} example result. If the user is one of the owners of a node, d
       "created_by":"dh3wr",
       "changed_on": "2018-07-03T08:00:52.786458Z",
       "changed_by":"dh3wr",
-      "owners": ["dl1abc","dh3wr","dl2ic"],
-      "avatar_picture": <couchdb attachment??>
+      "owners": ["dl1abc","dh3wr","dl2ic"]
     }
   ]
 }
 \end{lstlisting}
 
+\textbf{Auth response: \texttt{false}:}\\
+Send \verb|403 Forbidden|.
 
+\newpage
 \subsubsection{GET /nodes/<nodename>}
 \label{protocoldef:microservicesapi:database:getnodes/nodename}
 
-Return details of <nodename> in JSON format.\\
-Mapping to CouchDB :\\
-\verb|GET /users/<nodename>|
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Return details of <nodename> in JSON format. \\ \hline
+    Permission         & \verb|node.read/<nodename>| \\ \hline
+    Mapping to CouchDB & \verb|GET /users/<nodename>|\\ \hline
+  \end{tabular}
+\end{table}
 
-Role \textbf{user} example result if not owner:
-\begin{lstlisting}
-{
-  "_id": "db0sda-dc2",
-  "coordinates": [34.123456, -23.123456],
-  "description": "some words about that node",
-  "hamcloud": true,
-  "created_on": "2018-07-03T08:00:52.786458Z",
-  "created_by":"dh3wr",
-  "changed_on": "2018-07-03T08:00:52.786458Z",
-  "changed_by":"dh3wr",
-  "owners": ["dl1abc","dh3wr","dl2ic"],
-  "avatar_picture": <couchdb attachment??>
-}
-\end{lstlisting}
+\textbf{Auth response: \texttt{true}:}\\
 
-Role \textbf{user} example result if owner of node or role \textbf{admin} or \textbf{support}:
 \begin{lstlisting}
 {
   "_id": "db0sda-dc2",
@@ -400,50 +396,92 @@ Role \textbf{user} example result if owner of node or role \textbf{admin} or \te
   "created_by":"dh3wr",
   "changed_on": "2018-07-03T08:00:52.786458Z",
   "changed_by":"dh3wr",
-  "owners": ["dl1abc","dh3wr","dl2ic"],
-  "avatar_picture": <couchdb attachment??>
+  "owners": ["dl1abc","dh3wr","dl2ic"]
 }
 \end{lstlisting}
 
+\textbf{Auth response: \texttt{limited}:}\\
+The output has be checked, if the asking username is in the \texttt{owners} array.\\
+
+If yes: return the complete output from CouchDB.\\
+If not: return just the whitelisted fields:\\
+
+\textit{Whitelist:} \_id, coordinates, description, hamcloud, owners\\
+
+Example (here dh3wr is asking with limited permission):
+\begin{lstlisting}
+{
+      "_id": "db0sda-dc1",
+      "coordinates": [34.123456, -23.123456],
+      "description": "some words about that node",
+      "hamcloud": true,
+      "owners": ["dl1abc","dl2ic"]
+}
+\end{lstlisting}
+
+\newpage
 \subsubsection{GET /nodes/\_names}
 \label{protocoldef:microservicesapi:database:getnodes/_names}
-Return just an JSON array of all nodenames. Used where selections have to be done on the website.
-For all roles example result:
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Return just an JSON array of all nodes. Used where selections have to be done on the website. \\ \hline
+    Permission         & \verb|nodes.list| \\ \hline
+    Mapping to CouchDB & \verb|GET /nodes/_design/nodes/_list/names/byId|\\ \hline
+  \end{tabular}
+\end{table}
 
-Mapping to CouchDB: \verb|GET /nodes/_design/nodes/_list/names/byId|
+\textbf{Auth response: \texttt{true}:}
 \begin{lstlisting}
-{
-  ["db0sda-dc1", "db0sda-dc2"]
-}
+["db0sda-dc2","db0sda-dc3"]
 \end{lstlisting}
 
-\subsubsection{GET /nodes/\_description}
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
+\subsubsection{GET /nodes/\_descriptions}
 \label{protocoldef:microservicesapi:database:getnodes/_descriptions}
-Return just an JSON array of all nodenames and their description, sorted as a list. Used where descriptive selections have to be done on the website.
-For all roles example result:
-Mapping to CouchDB: \verb|GET /nodes/_design/nodes/_list/descriptions/descriptions|
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Return just an JSON array of all nodenames and their description, sorted as a list. Used where descriptive selections have to be done on the website. \\ \hline
+    Permission         & \verb|nodes.list| \\ \hline
+    Mapping to CouchDB & \verb|GET /nodes/_design/nodes/_list/descriptions/descriptions|\\ \hline
+  \end{tabular}
+\end{table}
+
+\textbf{Auth response: \texttt{true}:}
 \begin{lstlisting}
-{
-  [
-    {
-      "_id": "db0sda-dc1",
-      "description": "some words about that node"
-    },
-    {
-      "_id": "db0sda-dc2",
-      "description": "some words about that node"
-    }
-  ]  
-}
+[
+  {
+    "_id": "db0sda-dc1",
+    "description": "some words about that node"
+  },
+  {
+    "_id": "db0sda-dc2",
+    "description": "some words about that node"
+  }
+]  
 \end{lstlisting}
 
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
 
-
+\newpage
 \subsubsection{PUT /nodes - Add new node}
 \label{protocoldef:microservicesapi:database:putnodes/node_create}
-Role \textbf{user} and \textbf{support} get \verb|403 Forbidden|.
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Add a non-existing new node with \_id <nodename>\\ \hline
+    Permission         & \verb|node.create| \\ \hline
+    Mapping to CouchDB & \verb|PUT /nodes/<nodesname>|\\ \hline
+    Mandatory fields   & \verb|_id, auth_key, hamcloud, owners, description| \\ \hline
+  \end{tabular}
+\end{table}
 
-Only role \textbf{admin} is allowed. Example POST message to send:
+\textbf{Auth response: \texttt{true}:}
+User to Database-Service: Example content to add node db0sda-dc2
 \begin{lstlisting}
 {
   "_id": "db0sda-dc2",
@@ -451,44 +489,87 @@ Only role \textbf{admin} is allowed. Example POST message to send:
   "coordinates": [34.123456, -23.123456],
   "description": "some words about that node",
   "hamcloud": true,
-  "created_on": "2018-07-03T08:00:52.786458Z",
-  "created_by":"dh3wr",
-  "changed_on": "2018-07-03T08:00:52.786458Z",
-  "changed_by":"dh3wr",
-  "owners": ["dl1abc","dh3wr","dl2ic"],
-  "avatar_picture": <couchdb attachment??>
+  "owners": ["dl1abc","dh3wr","dl2ic"]
 }
 \end{lstlisting}
 
+Mapping to CouchDB with adding \verb|created_*| information by database microservice:\\
+\begin{lstlisting}
+{
+  "_id": "db0sda-dc2",
+  "auth_key": "73mxX4JLttzmVZ2"
+  "coordinates": [34.123456, -23.123456],
+  "description": "some words about that node",
+  "hamcloud": true,
+  "owners": ["dl1abc","dh3wr","dl2ic"]
+  "created_on": "2018-07-08T11:50:02.168325Z",
+  "created_by": <username from basic-auth>
+}
+\end{lstlisting}
+
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
+\newpage
 \subsubsection{PUT /nodes - Edit existing node}
 \label{protocoldef:microservicesapi:database:putnodes/node_update}
-Role \textbf{user} and \textbf{support} get returned \verb|403 Forbidden|.
+Edit is differentiated from create by the presence of the \colorbox{red}{\texttt{\_rev}} field.
 
-First get node like in section \ref{protocoldef:microservicesapi:database:getnodes/nodename} to get the revision. Then send the PUT request with just the changed values. The \verb|_id| and \verb|_rev| must be sent always.
-Only role \textbf{admin} is allowed.
-Example POST message to send:
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Edit the existing node <nodename>.\\ \hline
+    Permission         & \verb|node.update/<nodename>| \\ \hline
+    Mapping to CouchDB & \verb|PUT /nodes/<nodename>|\\ \hline
+    Mandatory fields   & \verb|_id, _rev| (\verb|\rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:getnodes/nodename})\\ \hline
+    Optional fields    & \verb|auth_key, hamcloud, owners, description| (minimum one)\\ \hline
+  \end{tabular}
+\end{table}
 
+\textbf{Auth response: \texttt{true}:}\\
+User to Database-Service: Example content to edit user dl6pt setting new password
 \begin{lstlisting}
 {
   "_id": "db0sda-dc2",
   "_rev": "1-ee070b17db9c3c58658d10fdedad2f48",
   "auth_key": "73mxX4JLttzmVZ2"
-  "coordinates": [34.123456, -2.123456],
-  "description": "New description with changed position"
 }
 \end{lstlisting}
 
-\subsubsection{DELETE /nodes/<nodename>?rev=}
+
+Mapping to CouchDB with adding \verb|updated_*| information by database microservice:\\
+\verb|PUT /users/<username>|
+\begin{lstlisting}
+{
+  "_id": "db0sda-dc2",
+  "_rev": "1-ee070b17db9c3c58658d10fdedad2f48",
+  "auth_key": "73mxX4JLttzmVZ2",
+  "updated_on": "2018-07-08T11:50:02.168325Z",
+  "updated_by": <username from basic-auth>
+}
+\end{lstlisting}
+
+\subsubsection{DELETE /nodes/<nodename>?rev=<rev>}
 \label{protocoldef:microservicesapi:database:deletenodes}
-Delete node <nodename>. No dependency check necessary.
-\todo{Maybe the transmitter service should inform the connected transmitters to the now deleted node to do a switch-over?}
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Delete node <nodename>\\ \hline
+    Permission         & \verb|node.delete/<nodename>| \\ \hline
+    Mapping to CouchDB & \verb|DELETE /nodes/<nodename>?rev=1-093...|\\ \hline
+    Mandatory fields   & \verb|_rev| as parameter (\verb|\rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:getnodes/nodename})\\ \hline
+  \end{tabular}
+\end{table}
 
-Role \textbf{admin} is the only allowed role. Others get as return message \verb|403 Forbidden|.
+\textbf{Auth response: \texttt{true}:}\\
+Transparent forwarding.
 
-First get the node's revision as in \ref{protocoldef:microservicesapi:database:getnodename}.\\
-User to API: \verb|DELETE /node/<node>?rev=1-09352254509c9ddf86e80fd83868d557|
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
 
+\todo{Maybe the transmitter service should inform the connected transmitters of the deleted node to do a switch-over?}
 
+\newpage
 \subsubsection{GET /rubrics}
 \label{protocoldef:microservicesapi:database:getrubrics}
 Returns all rubrics with all setting details in JSON format. This does \textbf{not} include the content of the 10 rubric message slots.
@@ -1490,7 +1571,7 @@ The following table defines for each role which actions are permitted.
 \end{table}
 
 \newpage
-\subsubsection{Auth API calls}
+\subsubsection{Auth API definition}
 The following table states all Auth Service API calls and their description. The POST request has to come always with a POST content of:
 \begin{lstlisting}
  {"username": "<asking_user>", "password": "<asking_user's_password>"}
@@ -1581,15 +1662,15 @@ There are three possible answers:
 
 \colorbox{red}{If the \texttt{limited} key is not present, the access is still forbidden.}\\
 
-\textbf{GET /auth/roles}\\
+\textbf{GET /auth/users/roles}\\
 A JSON array of available roles can be obtained without authentication by.\\
 Example output:
 \begin{lstlisting}
-{
-  ["user","support","admin","thirdparty.brandmeister","thirdparty.aprs"]
-}
+["user","support","admin","thirdparty.brandmeister","thirdparty.aprs"]
 \end{lstlisting}
 
+\newpage
+\subsubsection{Auth call reference list}
 In order to shorten the table, the abbreviation \textbf{/a/u/p} is used to represent\\
 \textbf{/auth/users/permission}.\\
 
@@ -1603,14 +1684,14 @@ The value in \verb|< >| is always the resource to be accessed.\\
         \ref{protocoldef:microservicesapi:database:getusers/_usernames} \\ \hline
     \verb|POST /a/u/p/user.read/<username>|        & \verb|GET    /users/<username>|      &
         \ref{protocoldef:microservicesapi:database:getusers/username} \\ \hline
-    \verb|POST /a/u/p/user.read|                   & \verb|GET    /users[?*]|             &
+    \verb|POST /a/u/p/user.read|                   & \verb|GET    /users|             &
         \ref{protocoldef:microservicesapi:database:getusers} \\ \hline
     \verb|POST /a/u/p/user.create|                 & \verb|PUT    /users|                 &
         \ref{protocoldef:microservicesapi:database:putusers/username_create} \\ \hline
     \verb|POST /a/u/p/user.update/<username>|      & \verb|PUT    /users|                 &
         \ref{protocoldef:microservicesapi:database:putusers/username_update} \\ \hline
     \verb|POST /a/u/p/user.delete/<username>|      & \verb|DELETE /users/<username>?rev=| &
-        \ref{protocoldef:microservicesapi:database:deleteusers/username} \\ \hline
+        \ref{protocoldef:microservicesapi:database:deleteusers} \\ \hline
     \verb|POST /a/u/p/user.change_role/<username>| & \verb|PUT    /users|                 &
         \ref{protocoldef:microservicesapi:database:putusers/username_update} \\ \hline
     \hline
