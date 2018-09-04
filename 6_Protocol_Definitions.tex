@@ -1,5 +1,31 @@
 \chapter{Protocol Definitions}
 
+\section{Input Data Validation}
+
+\subsection{Username}
+\label{protocoldef:inputvalidation:username}
+First transform to lowercase and remove whitespaces everywhere in the String. Then check against
+\verb|^[a-z0-9._\-\?]{3,40}$|
+
+\subsection{Bcrypt Hash}
+\label{protocoldef:inputvalidation:bcrypt}
+\verb|^\$2[aby]?\$\d{1,2}\$[.\/A-Za-z0-9]{53}$|
+
+\subsection{Email Address}
+\label{protocoldef:inputvalidation:email}
+\begin{Verbatim}
+\A(?=[a-z0-9@.!#$%&'*+/=?^_`{|}~-]{6,254}\z)(?=[a-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@)\\
+[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@\\
+(?:(?=[a-z0-9-]{1,63}\.)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+\\
+(?=[a-z0-9-]{1,63}\z)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z
+\end{Verbatim}
+
+\subsection{Roles}
+\label{protocoldef:inputvalidation:roles}
+Get the actual set of allowed roles from the Auth Service at startup and check that the given value is in the returned array. See \ref{protocoldef:auth:api} for the API call to the Auth Service.
+The JSON Value must be an Array with at least one entry. All entries must be a valid role. All entries have to be different, no repetitions of given roles are allow. They have to be filtered out if they exist.
+
+
 \section{Microservices API}
 \label{protocoldef:microservicesapi}
 
@@ -168,6 +194,11 @@ Send \verb|403 Forbidden|.
     Permission         & \verb|user.create| \\ \hline
     Mapping to CouchDB & \verb|PUT /users/<username>|\\ \hline
     Mandatory fields   & \verb|_id, password, email, roles, enabled| \\ \hline
+    Field validation   & \verb|_id      :| \ref{protocoldef:inputvalidation:username}| \\
+                       & \verb|password :| \ref{protocoldef:inputvalidation:bcrypt} \\
+                       & \verb|email    :| \ref{protocoldef:inputvalidation:email} \\
+                       & \verb|roles    :| \ref{protocoldef:inputvalidation:roles} \\
+                       & \verb|enabled  :| boolean\\ \hline
   \end{tabular}
 \end{table}
 
@@ -178,7 +209,7 @@ User to Database-Service: Example content to add user dl6pt
   "_id" : "dl6pt",
   "password": "$2y$12$lqUueRVo94f439Tt7zqrZOHPfm6YoBzNawWLLIykF3nMip3L6mxLK",
   "email": "ralf@secret.com",
-  "roles": "admin",
+  "roles": ["admin"],
   "enabled": true
 }
 \end{lstlisting}
@@ -189,7 +220,7 @@ Mapping to CouchDB with adding \verb|created_*| information by database microser
   "_id" : "dl6pt",
   "password": "$2y$12$lqUueRVo94f439Tt7zqrZOHPfm6YoBzNawWLLIykF3nMip3L6mxLK",
   "email": "ralf@secret.com",
-  "admin": "admin",
+  "roles": ["admin"],
   "enabled": true,
   "created_on": "2018-07-08T11:50:02.168325Z",
   "created_by": <username from basic-auth>
@@ -212,6 +243,12 @@ Edit is differentiated from create by the presence of the \colorbox{red}{\texttt
     Mapping to CouchDB & \verb|PUT /users/<username>|\\ \hline
     Mandatory fields   & \verb|_id, _rev| (\verb|\rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:getusers/username})\\ \hline
     Optional fields    & \verb|password, email, roles, enabled| (minimum one)\\ \hline
+    Field validation   & \verb|_id       :| Let CouchDB decide, as the entry is already present. \\
+                       & \verb|_rev      :| Let CouchDB decide, as the entry is already present. \\
+                       & \verb|password  :| \ref{protocoldef:inputvalidation:bcrypt} \\
+                       & \verb|email     :| \ref{protocoldef:inputvalidation:email} \\
+                       & \verb|roles     :| \ref{protocoldef:inputvalidation:roles} \\
+                       & \verb|enabled   :| boolean\\ \hline
   \end{tabular}
 \end{table}
 
@@ -246,10 +283,16 @@ Send \verb|403 Forbidden|.
   \begin{tabular}{|l|p{10cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Edit the existing user <username>\\ \hline
-    \colorbox{red}{Permission}         & \verb|user.change\_role/<username>| \\ \hline
+    \colorbox{red}{Permission}         & \verb|user.change_role/<username>| \\ \hline
     Mapping to CouchDB & \verb|PUT /users/<username>|\\ \hline
     Mandatory fields   & \verb|_id, _rev, roles| (\verb|\rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:getusers/username}\\ \hline
     Optional fields    & \verb|password, email, roles, enabled| (minimum one)\\ \hline
+    Field validation   & \verb|_id       :| Let CouchDB decide, as the entry is already present. \\
+                       & \verb|_rev      :| Let CouchDB decide, as the entry is already present. \\
+                       & \verb|password  :| \ref{protocoldef:inputvalidation:bcrypt} \\
+                       & \verb|email     :| \ref{protocoldef:inputvalidation:email} \\
+                       & \verb|roles     :| \ref{protocoldef:inputvalidation:roles} \\
+                       & \verb|enabled   :| boolean\\ \hline
   \end{tabular}
 \end{table}
 
@@ -1572,6 +1615,7 @@ The following table defines for each role which actions are permitted.
 
 \newpage
 \subsubsection{Auth API definition}
+\label{protocoldef:auth:api}
 The following table states all Auth Service API calls and their description. The POST request has to come always with a POST content of:
 \begin{lstlisting}
  {"username": "<asking_user>", "password": "<asking_user's_password>"}
