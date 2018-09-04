@@ -49,6 +49,14 @@ Integer value between 0 and 60*60*24*30.
 \label{protocoldef:inputvalidation:description}
 The description has to be a string with arbitrary content. Max length 45 characters.
 
+\subsection{RIC}
+\label{protocoldef:inputvalidation:ric}
+Integer value between 1 and $$2^21$$.
+
+\subsection{Function Bits}
+\label{protocoldef:inputvalidation:function}
+Integer value >= 0 and <= 3.
+
 \section{Microservices API}
 \label{protocoldef:microservicesapi}
 
@@ -939,7 +947,6 @@ User to Database-Service: Example content to edit to add rubric dx-kw changing t
 \end{lstlisting}
 
 Mapping to CouchDB with adding \verb|updated_*| information by database microservice:\\
-\verb|PUT /users/<username>|
 \begin{lstlisting}
 {
   "_id": "db0sda-dc2",
@@ -959,7 +966,7 @@ Send \verb|403 Forbidden|.
 \begin{table}[htbp]
   \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
-    Description        & Delete node <nodename>\\ \hline
+    Description        & Delete node <rubricname>\\ \hline
     Permission         & \verb|rubric.delete/<rubricname>| \\ \hline
     Mapping to CouchDB & \verb|DELETE /rubrics/<rubricname>?rev=<rev>|\\ \hline
     Mandatory fields   & \verb|_rev| as parameter (\verb|\rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:getrubrics/rubricname})\\ \hline
@@ -1119,11 +1126,29 @@ Send \verb|403 Forbidden|.
 
 \newpage
 \subsubsection{PUT /subscribers - Add new subscriber}
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Add a non-existing new subscriber with \_id <subscribername>\\ \hline
+    Permission         & \verb|subscriber.create| \\ \hline
+    Mapping to CouchDB & \verb|PUT /subscribers/<subscribername>|\\ \hline
+    Mandatory fields   & \verb|_id, description, pagers, ric, function, type| \\
+                       & \verb|enabled, third_party_services, owners, groups| \\ \hline
+    Field validation   & \verb|_id                  :| \ref{protocoldef:inputvalidation:name} \\
+                       & \verb|description          :| \ref{protocoldef:inputvalidation:description}\\
+                       & \verb|pagers               :| The key for the array, must be present.\\
+                       & \verb|ric                  :| \ref{protocoldef:inputvalidation:ric} \\
+                       & \verb|function             :| \ref{protocoldef:inputvalidation:function} \\
+                       & \verb|type                 :|  \\
+                       & \verb|enabled              :|  boolean \\
+                       & \verb|third_party_services :| The key for the array, must be present \\
+                       & \verb|owners               :| \ref{protocoldef:inputvalidation:owners} \\
+                       & \verb|groups               :| The key for the array, must be present \\ \hline
+  \end{tabular}
+\end{table}
 
-Role \textbf{user} gets \verb|403 Forbidden|
-
-Only role \textbf{admin} and \textbf{support} is allowed.\\
-Example POST message to send:
+\textbf{Auth response: \texttt{true}:}
+User to Database-Service: Example content to add subscriber dl1abc
 \begin{lstlisting}
 {
   "_id": "dl1abc",
@@ -1137,11 +1162,11 @@ Example POST message to send:
       "enabled": true
     }
   ],
-  third_party_services": [
+  "third_party_services": [
    "APRS",
    "BM"
   ],
-  "owner": [
+  "owners": [
     "dh3wr",
     "dl1abc"
   ],
@@ -1149,35 +1174,107 @@ Example POST message to send:
 }
 \end{lstlisting}
 
-\subsubsection{PUT /subscribers - Edit existing subscriber}
-Role \textbf{admin} and \textbf{support} are allowed to do changes.\\
-Role \textbf{user} gets returned \verb|403 Forbidden|, if not in owner array.
-
-First get subscriber like in section \ref{protocoldef:microservicesapi:database:getsubscribername} to get the revision. Then send the PUT request with just the changed values. The \verb|_id| and \verb|_rev| must be sent always.
-
-Example POST message to send:
+Mapping to CouchDB with adding \verb|created_*| information by database microservice:\\
+\begin{lstlisting}
 \begin{lstlisting}
 {
   "_id": "dl1abc",
   "description": "Peter",
   "pagers": [
     {
-      "ric": 65432,
-      "function": 2,
-      "name": "Peters Alphapoc, heute mal anders",
+      "ric": 123456,
+      "function": 3,
+      "name": "Peters Alphapoc",
       "type": "alphaPpoc",
       "enabled": true
     }
-  ]
+  ],
+  "third_party_services": [
+   "APRS",
+   "BM"
+  ],
+  "owner": [
+    "dh3wr",
+    "dl1abc"
+  ],
+  "groups": [],
+  "created_on": "2018-07-08T11:50:02.168325Z",
+  "created_by": <username from basic-auth>
 }
 \end{lstlisting}
 
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
 
-\subsubsection{DELETE /subscribers/<subscribername>?rev=}
-Delete subscriber <subscribername>. If must be also deleted from any subscriber\_group that is containing it. If it is the only one subscriber on a subscriber\_group also delete that subscriber\_group.
+\newpage
+\subsubsection{PUT /subscribers - Edit existing subscriber}
+Edit is differentiated from create by the presence of the \colorbox{red}{\texttt{\_rev}} field.
 
-Role \textbf{admin} and \textbf{support} are allowed to do so.\\
-Role \textbf{user} gets returned \verb|403 Forbidden|, if not in owner array.
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Add a edit a existing subscriber with \_id <subscribername>\\ \hline
+    Permission         & \verb|subscriber.update| \\ \hline
+    Mapping to CouchDB & \verb|PUT /subscribers/<subscribername>|\\ \hline
+    Mandatory fields   & \verb|_id, _rev| \\ \hline
+    Optional fields    & \verb|description, pagers, ric, function, type, enabled,| \\
+                       & \verb|third_party_services, owners, groups (minimum one, if it's pagers, the| \\
+                       & \verb|complete pagers array has to be sent.| \\ \hline
+    Field validation   & \verb|_id                  :| Let CouchDB decide, as the entry is already present. \\
+                       & \verb|_rev                 :| Let CouchDB decide, as the entry is already present. \\
+                       & \verb|description          :| \ref{protocoldef:inputvalidation:description}\\
+                       & \verb|pagers               :| The key for the array, must be present.\\
+                       & \verb|ric                  :| \ref{protocoldef:inputvalidation:ric} \\
+                       & \verb|function             :| \ref{protocoldef:inputvalidation:function} \\
+                       & \verb|type                 :|  \\
+                       & \verb|enabled              :|  boolean \\
+                       & \verb|third_party_services :| The key for the array, must be present \\
+                       & \verb|owners               :| \ref{protocoldef:inputvalidation:owners} \\
+                       & \verb|groups               :| The key for the array, must be present \\ \hline
+  \end{tabular}
+\end{table}
+
+\textbf{Auth response: \texttt{true}:}
+User to Database-Service: Example content to edit the description of subscriber dl1abc
+\begin{lstlisting}
+{
+  "_id": "dl1abc",
+  "_rev": "1-44182aeb25815b19babe1c0a6bb95e68",
+  "description": "Peter",
+\end{lstlisting}
+
+
+Mapping to CouchDB with adding \verb|updated_*| information by database microservice:\\
+\begin{lstlisting}
+{
+  "_id": "dl1abc",
+  "_rev": "1-44182aeb25815b19babe1c0a6bb95e68",
+  "description": "Peter",
+  "updated_on": "2018-07-08T11:50:02.168325Z",
+  "updated_by": <username from basic-auth>
+}
+\end{lstlisting}
+
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
+\newpage
+\subsubsection{DELETE /subscribers/<subscribername>?rev=<rev>}
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Delete subscriber <subscribename>\\ \hline
+    Permission         & \verb|subscriber.delete/<subscribercname>| \\ \hline
+    Mapping to CouchDB & \verb|DELETE /subscribers/<subscribername>?rev=<rev>|\\ \hline
+    Mandatory fields   & \verb|_rev| as parameter (\verb|\rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:getsubscribers/subscribername})\\ \hline
+  \end{tabular}
+\end{table}
+
+\textbf{Auth response: \texttt{true}:}\\
+Transparent forwarding.
+
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
 
 \subsubsection{GET /subscriber\_groups}
 Returns an array of existing subscribers\_goups tags in JSON format.
