@@ -42,7 +42,7 @@ String with only \verb|a-zA-Z0-9_-| and max length of TBD.
 String with only \verb|a-zA-Z0-9_-| and max length of TBD.
 
 \subsection{Rubric Cyclic Transmit Interval}
-\label{protocoldef:inputvalidation:cyclic_transmit_interval}
+\label{protocoldef:inputvalidation:cyclictransmitinterval}
 Integer value between 0 and 60*60*24*30.
 
 \subsection{Description}
@@ -56,6 +56,46 @@ Integer value between 1 and $$2^21$$.
 \subsection{Function Bits}
 \label{protocoldef:inputvalidation:function}
 Integer value >= 0 and <= 3.
+
+\subsection{Pager Type}
+\label{protocoldef:inputvalidation:pagertype}
+String
+\todo{TBD}
+
+\subsection{Transmitter Usage}
+\label{protocoldef:inputvalidation:usage}
+Valid values are \verb|wirerange| or \verb|personal|.
+
+\subsection{Transmitter Timeslots}
+\label{protocoldef:inputvalidation:timeslots}
+A JSON Array of \textbf{exact} 16 boolean values.
+
+\subsection{Transmitter Output Power}
+\label{protocoldef:inputvalidation:power}
+Float Value, > 0, round to 2 decimals. Max value 1000
+
+\subsection{Coordinates}
+\label{protocoldef:inputvalidation:coordinates}
+JSON Array of two float, may be negative.
+\todo{check ranges}
+
+\subsection{Transmitter Antenna Type}
+\label{protocoldef:inputvalidation:antennatype}
+String
+\todo{define}
+
+\subsection{Transmitter Antenna Gain}
+\label{protocoldef:inputvalidation:antennagain}
+Float, can be negative min = -40, max = 40
+
+\subsection{Transmitter Antenna Direction}
+\label{protocoldef:inputvalidation:antennadirection}
+Integer, if given as float -> round. Then modulo 360
+
+\subsection{Transmitter Antenna Height}
+\label{protocoldef:inputvalidation:antennaagl}
+Integer, if given as float -> round. Always greater then 0.
+
 
 \section{Microservices API}
 \label{protocoldef:microservicesapi}
@@ -272,7 +312,7 @@ Edit is differentiated from create by the presence of the \colorbox{red}{\texttt
     Description        & Edit the existing user <username>.\\ \hline
     Permission         & \verb|user.update/<username>| \\ \hline
     Mapping to CouchDB & \verb|PUT /users/<username>|\\ \hline
-    Mandatory fields   & \verb|_id, _rev| (\verb|\rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:getusers/username})\\ \hline
+    Mandatory fields   & \verb|_id, _rev| (\verb|_rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:getusers/username})\\ \hline
     Optional fields    & \verb|password, email, roles, enabled| (minimum one)\\ \hline
     Field validation   & \verb|_id       :| Let CouchDB decide, as the entry is already present. \\
                        & \verb|_rev      :| Let CouchDB decide, as the entry is already present. \\
@@ -316,7 +356,7 @@ Send \verb|403 Forbidden|.
     Description        & Edit the existing user <username>\\ \hline
     \colorbox{red}{Permission}         & \verb|user.change_role/<username>| \\ \hline
     Mapping to CouchDB & \verb|PUT /users/<username>|\\ \hline
-    Mandatory fields   & \verb|_id, _rev, roles| (\verb|\rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:getusers/username}\\ \hline
+    Mandatory fields   & \verb|_id, _rev, roles| (\verb|_rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:getusers/username}\\ \hline
     Optional fields    & \verb|password, email, roles, enabled| (minimum one)\\ \hline
     Field validation   & \verb|_id       :| Let CouchDB decide, as the entry is already present. \\
                        & \verb|_rev      :| Let CouchDB decide, as the entry is already present. \\
@@ -342,8 +382,8 @@ Send \verb|403 Forbidden|.
     Item               & Description  \\ \hline \hline
     Description        & Delete user <username>\\ \hline
     Permission         & \verb|user.delete/<username>| \\ \hline
-    Mapping to CouchDB & \verb|DELETE /users/<username>?rev=1-093...|\\ \hline
-    Mandatory fields   & \verb|_rev| as parameter (\verb|\rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:getusers/username})\\ \hline
+    Mapping to CouchDB & \verb|DELETE /users/<username>?rev=<rev>|\\ \hline
+    Mandatory fields   & \verb|rev| as parameter (\verb|rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:getusers/username})\\ \hline
   \end{tabular}
 \end{table}
 
@@ -550,11 +590,12 @@ Send \verb|403 Forbidden|.
     Description        & Add a non-existing new node with \_id <nodename>\\ \hline
     Permission         & \verb|node.create| \\ \hline
     Mapping to CouchDB & \verb|PUT /nodes/<nodesname>|\\ \hline
-    Mandatory fields   & \verb|_id, auth_key, hamcloud, owners, description| \\ \hline
-    Field validation   & \verb|_id         :| \ref{protocoldef:inputvalidation:name}| \\
+    Mandatory fields   & \verb|_id, auth_key, hamcloud, owners, description, coordinates| \\ \hline
+    Field validation   & \verb|_id         :| \ref{protocoldef:inputvalidation:name} \\
                        & \verb|auth_key    :| \ref{protocoldef:inputvalidation:authkey} \\
                        & \verb|hamcloud    :| boolean \\
                        & \verb|owners      :| \ref{protocoldef:inputvalidation:owners} \\
+                       & \verb|coordinates :| \ref{protocoldef:inputvalidation:coordinates}\\
                        & \verb|description :| \ref{protocoldef:inputvalidation:description}\\ \hline
   \end{tabular}
 \end{table}
@@ -600,13 +641,14 @@ Edit is differentiated from create by the presence of the \colorbox{red}{\texttt
     Description        & Edit the existing node <nodename>.\\ \hline
     Permission         & \verb|node.update/<nodename>| \\ \hline
     Mapping to CouchDB & \verb|PUT /nodes/<nodename>|\\ \hline
-    Mandatory fields   & \verb|_id, _rev| (\verb|\rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:getnodes/nodename})\\ \hline
-    Optional fields    & \verb|auth_key, hamcloud, owners, description| (minimum one)\\ \hline
+    Mandatory fields   & \verb|_id, _rev| (\verb|_rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:getnodes/nodename})\\ \hline
+    Optional fields    & \verb|auth_key, hamcloud, owners, description, coordinates| (minimum one)\\ \hline
     Field validation   & \verb|_id         :| Let CouchDB decide, as the entry is already present. \\
                        & \verb|_rev        :| Let CouchDB decide, as the entry is already present. \\
                        & \verb|auth_key    :| \ref{protocoldef:inputvalidation:authkey} \\
                        & \verb|hamcloud    :| boolean \\
                        & \verb|owners      :| \ref{protocoldef:inputvalidation:owners} \\
+                       & \verb|coordinates :| \ref{protocoldef:inputvalidation:coordinates}\\
                        & \verb|description :| \ref{protocoldef:inputvalidation:description}\\ \hline
 
   \end{tabular}
@@ -639,14 +681,14 @@ Send \verb|403 Forbidden|.
 
 
 \subsubsection{DELETE /nodes/<nodename>?rev=<rev>}
-\label{protocoldef:microservicesapi:database:deletenodes}
+\label{protocoldef:microservicesapi:database:deletenode}
 \begin{table}[htbp]
   \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Delete node <nodename>\\ \hline
     Permission         & \verb|node.delete/<nodename>| \\ \hline
     Mapping to CouchDB & \verb|DELETE /nodes/<nodename>?rev=1-093...|\\ \hline
-    Mandatory fields   & \verb|_rev| as parameter (\verb|\rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:getnodes/nodename})\\ \hline
+    Mandatory fields   & \verb|rev| as parameter (\verb|rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:getnodes/nodename})\\ \hline
   \end{tabular}
 \end{table}
 
@@ -660,7 +702,7 @@ Send \verb|403 Forbidden|.
 
 \newpage
 \subsubsection{GET /rubrics}
-\label{protocoldef:microservicesapi:database:getrubrics}
+\label{protocoldef:microservicesapi:database:rubrics}
 
 \begin{table}[htbp]
   \begin{tabular}{|l|p{12cm}|} \hline
@@ -711,8 +753,8 @@ Send \verb|403 Forbidden|.
     Description        & Get the output as in section \ref{protocoldef:microservicesapi:database:rubrics}, but just for rubric numbers between <n> and <m>. \\ \hline
     Permission         & \verb|rubric.read| \\ \hline
     Mapping to CouchDB & \verb|GET /rubrics/\_view/byNumber?startkey=<n>\&endkey=<m>| \\ \hline
-    Field validation   & \verb|startkey :| \ref{protocoldef:inputvalidation:rubricnumber}| \\
-                       & \verb|endkey   :| \ref{protocoldef:inputvalidation:rubricnumber}| \\ \hline
+    Field validation   & \verb|startkey :| \ref{protocoldef:inputvalidation:rubricnumber} \\
+                       & \verb|endkey   :| \ref{protocoldef:inputvalidation:rubricnumber} \\ \hline
   \end{tabular}
 \end{table}
 Auth handling is the same as in section \ref{protocoldef:microservicesapi:database:rubrics}.
@@ -855,7 +897,7 @@ Send \verb|403 Forbidden|.
                        & \verb|label                    :| \ref{protocoldef:inputvalidation:rubriclabel} \\
                        & \verb|transmitter_groups       :| \ref{protocoldef:inputvalidation:transmittergroup} \\
                        & \verb|cyclic_transmit          :| boolean \\
-                       & \verb|cyclic_transmit_interval :| \ref{protocoldef:inputvalidation:rubricinterval} \\
+                       & \verb|cyclic_transmit_interval :| \ref{protocoldef:inputvalidation:cyclictransmitinterval} \\
                        & \verb|owners                   :| \ref{protocoldef:inputvalidation:owners} \\ \hline
   \end{tabular}
 \end{table}
@@ -917,10 +959,10 @@ Edit is differentiated from create by the presence of the \colorbox{red}{\texttt
 \begin{table}[htbp]
   \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
-    Description        & Edit the existing node <nodename>.\\ \hline
+    Description        & Edit the existing rubric <rubricname>.\\ \hline
     Permission         & \verb|rubric.update/<rubricname>| \\ \hline
     Mapping to CouchDB & \verb|PUT /rubrics/<rubricsname>|\\ \hline
-    Mandatory fields   & \verb|_id, _rev| (\verb|\rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:getrubrics/rubricname})\\ \hline
+    Mandatory fields   & \verb|_id, _rev| (\verb|_rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:getrubrics/rubricname})\\ \hline
     Optional fields    & \verb|number, description, label, transmitter_groups,| \\
                        & \verb|cyclic_transmit, cyclic_transmit_interval, owners| (minimum one)\\ \hline
     Field validation   & \verb|_id                      :| Let CouchDB decide, as the entry is already present. \\
@@ -930,7 +972,7 @@ Edit is differentiated from create by the presence of the \colorbox{red}{\texttt
                        & \verb|label                    :| \ref{protocoldef:inputvalidation:rubriclabel} \\
                        & \verb|transmitter_groups       :| \ref{protocoldef:inputvalidation:transmittergroup} \\
                        & \verb|cyclic_transmit          :| boolean \\
-                       & \verb|cyclic_transmit_interval :| \ref{protocoldef:inputvalidation:rubricinterval} \\
+                       & \verb|cyclic_transmit_interval :| \ref{protocoldef:inputvalidation:cyclictransmitinterval} \\
                        & \verb|owners                   :| \ref{protocoldef:inputvalidation:owners} \\ \hline
 
   \end{tabular}
@@ -962,14 +1004,14 @@ Send \verb|403 Forbidden|.
 
 
 \subsubsection{DELETE /rubrics/<rubricname>?rev=<rev>}
-\label{protocoldef:microservicesapi:database:deleterubrics}
+\label{protocoldef:microservicesapi:database:deleterubric}
 \begin{table}[htbp]
   \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Delete node <rubricname>\\ \hline
     Permission         & \verb|rubric.delete/<rubricname>| \\ \hline
     Mapping to CouchDB & \verb|DELETE /rubrics/<rubricname>?rev=<rev>|\\ \hline
-    Mandatory fields   & \verb|_rev| as parameter (\verb|\rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:getrubrics/rubricname})\\ \hline
+    Mandatory fields   & \verb|rev| as parameter (\verb|rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:getrubrics/rubricname})\\ \hline
   \end{tabular}
 \end{table}
 
@@ -1033,7 +1075,7 @@ Send \verb|403 Forbidden|.
 
 \newpage
 \subsubsection{GET /subscribers/<subscribername>}
-\label{protocoldef:microservicesapi:database:getsubscribername}
+\label{protocoldef:microservicesapi:database:getsubscribers/subscribername}
 \begin{table}[htbp]
   \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
@@ -1124,6 +1166,27 @@ Send \verb|403 Forbidden|.
 \textbf{Auth response: \texttt{false}:}\\
 Send \verb|403 Forbidden|.
 
+\subsubsection{GET /subscriber\_groups}
+\label{protocoldef:microservicesapi:database:getsubscriber/_groups}
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Returns an array of existing subscribers\_goups tags in JSON format. Used where selections have to be done on the website. \\ \hline
+    Permission         & \verb|subscriber_groups.list| \\ \hline
+    Mapping to CouchDB & \verb|GET /subscribers/??? unknown FIXME|\\ \hline
+  \end{tabular}
+\end{table}
+\todo{Generate CouchDB request}
+
+\textbf{Auth response: \texttt{true} or \texttt{limited}:}
+\begin{lstlisting}
+["dl.OV-G01","dl.rwth-afu"]
+\end{lstlisting}
+
+\textbf{Auth response: \texttt{false}}\\
+Send \verb|403 Forbidden|.
+
+
 \newpage
 \subsubsection{PUT /subscribers - Add new subscriber}
 \begin{table}[htbp]
@@ -1139,7 +1202,7 @@ Send \verb|403 Forbidden|.
                        & \verb|pagers               :| The key for the array, must be present.\\
                        & \verb|ric                  :| \ref{protocoldef:inputvalidation:ric} \\
                        & \verb|function             :| \ref{protocoldef:inputvalidation:function} \\
-                       & \verb|type                 :|  \\
+                       & \verb|type                 :| \ref{protocoldef:inputvalidation:pagertype} \\
                        & \verb|enabled              :|  boolean \\
                        & \verb|third_party_services :| The key for the array, must be present \\
                        & \verb|owners               :| \ref{protocoldef:inputvalidation:owners} \\
@@ -1206,7 +1269,6 @@ Mapping to CouchDB with adding \verb|created_*| information by database microser
 \textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
 Send \verb|403 Forbidden|.
 
-\newpage
 \subsubsection{PUT /subscribers - Edit existing subscriber}
 Edit is differentiated from create by the presence of the \colorbox{red}{\texttt{\_rev}} field.
 
@@ -1226,8 +1288,8 @@ Edit is differentiated from create by the presence of the \colorbox{red}{\texttt
                        & \verb|pagers               :| The key for the array, must be present.\\
                        & \verb|ric                  :| \ref{protocoldef:inputvalidation:ric} \\
                        & \verb|function             :| \ref{protocoldef:inputvalidation:function} \\
-                       & \verb|type                 :|  \\
-                       & \verb|enabled              :|  boolean \\
+                       & \verb|type                 :| \ref{protocoldef:inputvalidation:pagertype} \\
+                       & \verb|enabled              :| boolean \\
                        & \verb|third_party_services :| The key for the array, must be present \\
                        & \verb|owners               :| \ref{protocoldef:inputvalidation:owners} \\
                        & \verb|groups               :| The key for the array, must be present \\ \hline
@@ -1263,10 +1325,10 @@ Send \verb|403 Forbidden|.
 \begin{table}[htbp]
   \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
-    Description        & Delete subscriber <subscribename>\\ \hline
-    Permission         & \verb|subscriber.delete/<subscribercname>| \\ \hline
+    Description        & Delete subscriber <subscribername>\\ \hline
+    Permission         & \verb|subscriber.delete/<subscribername>| \\ \hline
     Mapping to CouchDB & \verb|DELETE /subscribers/<subscribername>?rev=<rev>|\\ \hline
-    Mandatory fields   & \verb|_rev| as parameter (\verb|\rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:getsubscribers/subscribername})\\ \hline
+    Mandatory fields   & \verb|rev| as parameter (\verb|rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:getsubscribers/subscribername})\\ \hline
   \end{tabular}
 \end{table}
 
@@ -1276,44 +1338,76 @@ Transparent forwarding.
 \textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
 Send \verb|403 Forbidden|.
 
-\subsubsection{GET /subscriber\_groups}
-Returns an array of existing subscribers\_goups tags in JSON format.
-This is allowed for \textbf{all} roles.
-
-\begin{lstlisting}
-{
-  ["dl.OV-G01","dl.rwth-afu"]
-}
-\end{lstlisting}
 
 \subsubsection{GET /transmitters/\_names}
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Return an JSON array of all transmitter names. Used where selections have to be done on the website\\ \hline
+    Permission         & \verb|transmitter.list| \\ \hline
+    Mapping to CouchDB & \verb|GET /transmitters/_design/transmitters/_list/names/byId|\\ \hline
+  \end{tabular}
+\end{table}
 
-\textbf{limited}: \verb|_id, _rev, usage, timeslots, power, owners, groups, emergency_power, coordinates, aprs_broadcast, enabled, auth_key, antenna, created_on, created_by, changed_on, changed_by| and sub-JSON-nodes of these keys.
-
-
-Return an JSON array of all transmitter names. Used where selections have to be done on the website.
-For all roles example result:
-
-Mapping to CouchDB: \verb|GET /transmitters/_design/transmitters/_list/names/byId|
+\textbf{Auth response: \texttt{true} or \texttt{limited}:}\\
 \begin{lstlisting}
-{
-  ["db0sda", "db0wa"]
-}
+["db0sda", "db0wa"]
 \end{lstlisting}
 
+\textbf{Auth response: \texttt{false}:}\\
+Send \verb|403 Forbidden|.
+
 \subsubsection{GET /transmitters/\_view/groups}
-Returns a JSON array of used transmitter groups tags from all known transmitters. Used for a suggestion of already existing transmitter group tags on the website.
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Returns a JSON array of used transmitter groups tags from all known transmitters. Used for a suggestion of already existing transmitter group tags on the website.\\ \hline
+    Permission         & \verb|transmitter.list| \\ \hline
+    Mapping to CouchDB & \verb|GET /transmitters/ ??? UNKNOWN FIXME|\\ \hline
+  \end{tabular}
+\end{table}
+\todo{generate CouchDB Request}
 
-\subsubsection{DELETE /transmitters/<transmittername>?rev=}
-Delete the transmitter <transmittername>. Also delete the transmitter from explicit entries on rubrics.
+\textbf{Auth response: \texttt{true} or \texttt{limited}:}\\
+\begin{lstlisting}
+["dl", "all"]
+\end{lstlisting}
 
-First get transmitter revision as defined in section \ref{protocoldef:microservicesapi:database:gettransmittername}. Then send the request with the revision.
+\textbf{Auth response: \texttt{false}:}\\
+Send \verb|403 Forbidden|.
 
+\newpage
 \subsubsection{PUT /transmitters - Add new transmitter}
-Add a new the transmitter.
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Add a non-existing new subscriber with \_id <subscribername>\\ \hline
+    Permission         & \verb|subscriber.create| \\ \hline
+    Mapping to CouchDB & \verb|PUT /subscribers/<subscribername>|\\ \hline
+    Mandatory fields   & \verb|_id, usage, timeslots, power, owners, groups,| \\
+                       & \verb|coordinates, aprs_broadcast, enabled, auth_key|\\
+                       & \verb|antenna, type, gain, direction, agl| \\ \hline
+    Field validation   & \verb|_id            :| \ref{protocoldef:inputvalidation:name} \\
+                       & \verb|usage          :| \ref{protocoldef:inputvalidation:usage}\\
+                       & \verb|timeslots      :| \ref{protocoldef:inputvalidation:timeslots}\\
+                       & \verb|power          :| \ref{protocoldef:inputvalidation:power} \\
+                       & \verb|owners         :| \ref{protocoldef:inputvalidation:owners} \\
+                       & \verb|groups         :| The key for the array, must be present \\ \hline
+                       & \verb|coordinates    :| \ref{protocoldef:inputvalidation:coordinates} \\
+                       & \verb|aprs_broadcast :| boolean \\
+                       & \verb|enabled        :| boolean \\
+                       & \verb|auth_key       :| \ref{protocoldef:inputvalidation:authkey} \\
+                       & \verb|antenna        :| The key for the array, must be present \\
+                       & \verb|type           :| \ref{protocoldef:inputvalidation:antennatype} \\
+                       & \verb|gain           :| \ref{protocoldef:inputvalidation:antennagain}\\
+                       & \verb|direction      :| \ref{protocoldef:inputvalidation:antennadirection}\\  
+                       & \verb|agl            :| \ref{protocoldef:inputvalidation:antennaagl}\\ \hline
+  \end{tabular}
+\end{table}
+\FloatBarrier
 
-Allowed roles are \textbf{admin} and \textbf{support}. Role \textbf{user} will get \verb|403 Forbidden|
-Example data to send:
+\textbf{Auth response: \texttt{true}:}
+User to Database-Service: Example content to add transmitter db0wa
 \begin{lstlisting}
 {
   "_id": "db0wa",
@@ -1365,38 +1459,142 @@ Example data to send:
 }
 \end{lstlisting}
 
-The MS has to add 
+Mapping to CouchDB with adding \verb|created_*| information by database microservice:\\
 \begin{lstlisting}
-  "created_on": "2018-07-03T08:00:52.786458Z",
-  "created_by": "dh3wr",
+  "_id": "db0wa",
+  "usage": "widerange",
+  "timeslots": [
+    true,
+    true,
+    false,
+    true,
+    true,
+    false,
+    true,
+    true,
+    false,
+    false,
+    true,
+    true,
+    false,
+    true,
+    true,
+    false
+  ],
+  "power": 20,
+  "owners": [
+    "dh3wr"
+  ],
+  "groups": [
+    "dl.nw.koeln.aachen"
+  ],
+  "emergency_power": {
+    "available": true,
+    "infinite": false,
+    "duration": 7200
+  },
+  "coordinates": [
+    50.71613,
+    6.165481
+  ],
+
+  "aprs_broadcast": false,
+  "enabled": true,
+  "auth_key": "Arj39135jAKS",
+  "antenna": {
+    "type": "omni",
+    "gain": 0,
+    "direction": 0,
+    "agl": 1
+  },
+  "created_on": "2018-07-08T11:50:02.168325Z",
+  "created_by": <username from basic-auth>
+}
 \end{lstlisting}
-and add it to the REST PUT call.
 
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
 
+\newpage
 \subsubsection{PUT /transmitters - Edit existing transmitter}
-Edit an existing transmitter.\\
-\todo{Is an active connection reset to that transmitter necessary? If the Authkey changes, an already established connection will keep working? And what about timeslot changes? They have to be applied immediately to the transmitter.}
+Edit is differentiated from create by the presence of the \colorbox{red}{\texttt{\_rev}} field.
 
-Allowed roles are \textbf{admin} and \textbf{support}. Role \textbf{user} will get \verb|403 Forbidden|
-\verb|_id| and \verb|_rev| have to be send always. So first get the current revision of the transmitter with a \verb|GET /transmitters/<transmittername>|.
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Edit the existing transmitter <transmittername>.\\ \hline
+    Permission         & \verb|transmitter.update/<transmittername>| \\ \hline
+    Mapping to CouchDB & \verb|PUT /transmitters/<transmittername>|\\ \hline
+    Mandatory fields   & \verb|_id, _rev| (\verb|_rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:gettransmitter/transmittername})\\ \hline
+    Optional fields    & \verb|usage, timeslots, power, owners, groups,| \\
+                       & \verb|coordinates, aprs_broadcast, enabled, auth_key|\\
+                       & \verb|antenna, type, gain, direction, agl| (minimum one, arrays complete) \\ \hline
+    Field validation   & \verb|_id            :| Let CouchDB decide, as the entry is already present. \\
+                       & \verb|_rev           :| Let CouchDB decide, as the entry is already present. \\
+                       & \verb|usage          :| \ref{protocoldef:inputvalidation:usage}\\
+                       & \verb|timeslots      :| \ref{protocoldef:inputvalidation:timeslots}\\
+                       & \verb|power          :| \ref{protocoldef:inputvalidation:power} \\
+                       & \verb|owners         :| \ref{protocoldef:inputvalidation:owners} \\
+                       & \verb|groups         :| The key for the array, must be present \\ \hline
+                       & \verb|coordinates    :| \ref{protocoldef:inputvalidation:coordinates} \\
+                       & \verb|aprs_broadcast :| boolean \\
+                       & \verb|enabled        :| boolean \\
+                       & \verb|auth_key       :| \ref{protocoldef:inputvalidation:authkey} \\
+                       & \verb|antenna        :| The key for the array, must be present \\
+                       & \verb|type           :| \ref{protocoldef:inputvalidation:antennatype} \\
+                       & \verb|gain           :| \ref{protocoldef:inputvalidation:antennagain}\\
+                       & \verb|direction      :| \ref{protocoldef:inputvalidation:antennadirection}\\  
+                       & \verb|agl            :| \ref{protocoldef:inputvalidation:antennaagl}\\ \hline
+  \end{tabular}
+\end{table}
+\FloatBarrier
 
-Example data to send:
+\textbf{Auth response: \texttt{true}:}
+User to Database-Service: Example to edit usage of transmitter db0wa:
 \begin{lstlisting}
 {
-
   "_id": "db0wa",
-  "_rev": "3-212820d0a75061289c8fbe39192fde22",
+  "_rev": "1-44182aeb25815b19babe1c0a6bb95e68",
   "usage": "widerange"
 }
 \end{lstlisting}
 
-The MS has to add or change the keys
+Mapping to CouchDB with adding \verb|updated_*| information by database microservice:\\
 \begin{lstlisting}
-  "changed_on": "2018-07-03T08:00:52.786458Z",
-  "changed_by": "dh3wr",
+{
+  "_id": "dl1abc",
+  "_rev": "1-44182aeb25815b19babe1c0a6bb95e68",
+  "updated_on": "2018-07-08T11:50:02.168325Z",
+  "updated_by": <username from basic-auth>
+}
 \end{lstlisting}
-and add them to the REST PUT call.
 
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
+\todo{Is an active connection reset to that transmitter necessary? If the Authkey changes, an already established connection will keep working? And what about timeslot changes? They have to be applied immediately to the transmitter.}
+
+\newpage
+\subsubsection{DELETE /transmitters/<transmittername>?rev=<rev>}
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Delete transmitter <transmittername>\\ \hline
+    Permission         & \verb|transmitter.delete/<transmittername>| \\ \hline
+    Mapping to CouchDB & \verb|DELETE /transmitter/<transmitername>?rev=<rev>|\\ \hline
+    Mandatory fields   & \verb|rev| as parameter (\verb|rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:gettransmitter/transmittername})\\ \hline
+  \end{tabular}
+\end{table}
+
+\textbf{Auth response: \texttt{true}:}\\
+Transparent forwarding.
+
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
+\todo{Is an active connection reset to that transmitter necessary?}
+
+\newpage
 \subsection{Call Service}
 
 \subsubsection{GET /calls}
@@ -1483,9 +1681,14 @@ Delete the content in rubric <rubricname> with message slot <message\_no>. The c
 \subsubsection{GET /transmitters}
 Return all transmitters with all details in JSON format.
 
+\textbf{limited}: \verb|_id, _rev, usage, timeslots, power, owners, groups, emergency_power, coordinates, aprs_broadcast, enabled, auth_key, antenna, created_on, created_by, changed_on, changed_by| and sub-JSON-nodes of these keys.
+
 \subsubsection{GET /transmitter/<transmittername>}
-\label{protocoldef:microservicesapi:database:gettransmittername}
+\label{protocoldef:microservicesapi:database:gettransmitter/transmittername}
 Return all details just of transmitter <transmittername>.
+
+
+\textbf{limited}: \verb|_id, _rev, usage, timeslots, power, owners, groups, emergency_power, coordinates, aprs_broadcast, enabled, auth_key, antenna, created_on, created_by, changed_on, changed_by| and sub-JSON-nodes of these keys.
 
 \subsubsection{POST /transmitters/\_bootstrap}
 \label{protcoldef:transmitters:bootstrap}
@@ -2084,7 +2287,7 @@ The value in \verb|< >| is always the resource to be accessed.\\
     \verb|POST /a/u/p/node.update/<nodename>| & \verb|PUT    /nodes|                   &
         \ref{protocoldef:microservicesapi:database:putnodes/node_update} \\            \hline
     \verb|POST /a/u/p/node.delete/<nodename>| & \verb|DELETE /nodes/<nodename>?rev=|   &
-        \ref{protocoldef:microservicesapi:database:deletenodes} \\                \hline
+        \ref{protocoldef:microservicesapi:database:deletenode} \\                \hline
     \hline
     \verb|POST /a/u/p/rubric.list|                & \verb|GET    /rubrics/_rubricnames|       &
         \ref{protocoldef:microservicesapi:database:getrubrics/_rubricnames} \\ \hline
@@ -2097,7 +2300,7 @@ The value in \verb|< >| is always the resource to be accessed.\\
     \verb|POST /a/u/p/rubric.update/<rubricname>| & \verb|PUT    /rubrics|                    &
         \ref{protocoldef:microservicesapi:database:putrubrics/rubrics_update} \\ \hline
     \verb|POST /a/u/p/rubric.delete/<rubricname>| & \verb|DELETE /rubrics/<rubricsname>?rev=| &
-        \ref{protocoldef:microservicesapi:database:deleterubrics} \\ \hline
+        \ref{protocoldef:microservicesapi:database:deleterubric} \\ \hline
     \hline    
     \verb|POST /a/u/p/news.read|                & \verb|GET    /news[?*]|                        & \ref{pr} \\ \hline
     \verb|POST /a/u/p/news.create|              & \verb|PUT    /news|                            & \ref{pr} \\ \hline
