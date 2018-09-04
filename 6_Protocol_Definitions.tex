@@ -83,7 +83,7 @@ For the endpoints \verb|GET /users|, \verb|GET /nodes|, \verb|GET /transmitters|
 \label{protocoldef:microservicesapi:database:getusers}
 
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Returns all users (depending on the filtering in \ref{protocoldef:filteringandpagination} in JSON format. \\ \hline
     Permission         & \verb|user.read| \\ \hline
@@ -153,7 +153,7 @@ Send \verb|403 Forbidden|.
 \label{protocoldef:microservicesapi:database:getusers/username}
 
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Return details of <username> in JSON format. \\ \hline
     Permission         & \verb|user.read/<username>| \\ \hline
@@ -191,7 +191,7 @@ Send \verb|403 Forbidden|.
 \label{protocoldef:microservicesapi:database:getusers/_usernames}
 
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Return just an JSON array of all enabled usernames. Used where selections have to be done on the website. \\ \hline
     Permission         & \verb|user.list| \\ \hline
@@ -211,7 +211,7 @@ Send \verb|403 Forbidden|.
 \subsubsection{PUT /users - Add new user}
 \label{protocoldef:microservicesapi:database:putusers/username_create}
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Add a non-existing new user with \_id <username>\\ \hline
     Permission         & \verb|user.create| \\ \hline
@@ -259,7 +259,7 @@ Send \verb|403 Forbidden|.
 Edit is differentiated from create by the presence of the \colorbox{red}{\texttt{\_rev}} field.
 
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Edit the existing user <username>.\\ \hline
     Permission         & \verb|user.update/<username>| \\ \hline
@@ -303,7 +303,7 @@ Send \verb|403 Forbidden|.
 
 \colorbox{red}{Special treatment if field \texttt{roles} is present:}\\
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Edit the existing user <username>\\ \hline
     \colorbox{red}{Permission}         & \verb|user.change_role/<username>| \\ \hline
@@ -330,7 +330,7 @@ Send \verb|403 Forbidden|.
 \label{protocoldef:microservicesapi:database:deleteusers}
 
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Delete user <username>\\ \hline
     Permission         & \verb|user.delete/<username>| \\ \hline
@@ -349,7 +349,7 @@ Send \verb|403 Forbidden|.
 \subsubsection{GET /nodes}
 \label{protocoldef:microservicesapi:database:getnodes}
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Returns all users (depending on the filtering in \ref{protocoldef:filteringandpagination} in JSON format. \\ \hline
     Permission         & \verb|node.read| \\ \hline
@@ -440,7 +440,7 @@ Send \verb|403 Forbidden|.
 \label{protocoldef:microservicesapi:database:getnodes/nodename}
 
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Return details of <nodename> in JSON format. \\ \hline
     Permission         & \verb|node.read/<nodename>| \\ \hline
@@ -489,7 +489,7 @@ Example (here dh3wr is asking with limited permission):
 \subsubsection{GET /nodes/\_names}
 \label{protocoldef:microservicesapi:database:getnodes/_names}
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Return just an JSON array of all nodes. Used where selections have to be done on the website. \\ \hline
     Permission         & \verb|nodes.list| \\ \hline
@@ -508,7 +508,7 @@ Send \verb|403 Forbidden|.
 \subsubsection{GET /nodes/\_descriptions}
 \label{protocoldef:microservicesapi:database:getnodes/_descriptions}
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Return just an JSON array of all nodenames and their description, sorted as a list. Used where descriptive selections have to be done on the website. \\ \hline
     Permission         & \verb|nodes.list| \\ \hline
@@ -537,7 +537,7 @@ Send \verb|403 Forbidden|.
 \subsubsection{PUT /nodes - Add new node}
 \label{protocoldef:microservicesapi:database:putnodes/node_create}
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Add a non-existing new node with \_id <nodename>\\ \hline
     Permission         & \verb|node.create| \\ \hline
@@ -587,7 +587,7 @@ Send \verb|403 Forbidden|.
 Edit is differentiated from create by the presence of the \colorbox{red}{\texttt{\_rev}} field.
 
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Edit the existing node <nodename>.\\ \hline
     Permission         & \verb|node.update/<nodename>| \\ \hline
@@ -633,7 +633,7 @@ Send \verb|403 Forbidden|.
 \subsubsection{DELETE /nodes/<nodename>?rev=<rev>}
 \label{protocoldef:microservicesapi:database:deletenodes}
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Delete node <nodename>\\ \hline
     Permission         & \verb|node.delete/<nodename>| \\ \hline
@@ -655,7 +655,7 @@ Send \verb|403 Forbidden|.
 \label{protocoldef:microservicesapi:database:getrubrics}
 
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Returns all rubrics (depending on the filtering in \ref{protocoldef:filteringandpagination} in JSON format. \\ \hline
     Permission         & \verb|rubric.read| \\ \hline
@@ -698,7 +698,7 @@ Send \verb|403 Forbidden|.
 \newpage
 \subsubsection{GET /rubrics/\_view/byNumber?startkey=<n>\&endkey=<m>}
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Get the output as in section \ref{protocoldef:microservicesapi:database:rubrics}, but just for rubric numbers between <n> and <m>. \\ \hline
     Permission         & \verb|rubric.read| \\ \hline
@@ -712,7 +712,7 @@ Auth handling is the same as in section \ref{protocoldef:microservicesapi:databa
 
 \subsubsection{GET /rubrics/\_view/byTransmitter?key=<transmittername>}
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Get the output as in section \ref{protocoldef:microservicesapi:database:rubrics}, but just for rubrics that contain <transmittername> in the \verb|"transmitters"| array. \\ \hline
     Permission         & \verb|rubric.read| \\ \hline
@@ -723,7 +723,7 @@ Auth handling is the same as in section \ref{protocoldef:microservicesapi:databa
 
 \subsubsection{GET /rubrics/\_view/byTransmitterGroup?key=<groupname>}
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Get the output as in section \ref{protocoldef:microservicesapi:database:rubrics}, but just for rubrics that contains <groupname> in the \verb|"transmitter_groups"| array. \\ \hline
     Permission         & \verb|rubric.read| \\ \hline
@@ -734,7 +734,7 @@ Auth handling is the same as in section \ref{protocoldef:microservicesapi:databa
 
 \subsubsection{GET /rubrics/\_view/withCyclicTransmit}
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Get the output as in section \ref{protocoldef:microservicesapi:database:rubrics}, but just for rubric that have the cyclic transmit flag enabled. \\ \hline
     Permission         & \verb|rubric.read| \\ \hline
@@ -747,7 +747,7 @@ Auth handling is the same as in section \ref{protocoldef:microservicesapi:databa
 \subsubsection{GET /rubrics/<rubricname>}
 \label{protocoldef:microservicesapi:database:getrubrics/rubricname}
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Return details of <rubricname> in JSON format. This does \textbf{not} include the content of the 10 rubric message slots. \\ \hline
     Permission         & \verb|rubric.read/<username>| \\ \hline
@@ -785,7 +785,7 @@ Send \verb|403 Forbidden|.
 \subsubsection{GET /rubrics/\_names}
 \label{protocoldef:microservicesapi:database:getrubrics/_names}
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Return just an JSON array of all rubricnames. Used where selections have to be done on the website. \\ \hline
     Permission         & \verb|rubrics.list| \\ \hline
@@ -805,7 +805,7 @@ Send \verb|403 Forbidden|.
 \subsubsection{GET /rubrics/\_descriptions}
 \label{protocoldef:microservicesapi:database:getrubrics/_descriptions}
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Return just an JSON array of all rubricnames their description in a JSON Array. Used where selections have to be done on the website. \\ \hline
     Permission         & \verb|rubrics.list| \\ \hline
@@ -834,7 +834,7 @@ Send \verb|403 Forbidden|.
 \subsubsection{PUT /rubrics - Add new rubric}
 \label{protocoldef:microservicesapi:database:putrubrics/rubrics_create}
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Add a non-existing new rubric with \_id <rubricname>\\ \hline
     Permission         & \verb|rubric.create| \\ \hline
@@ -848,7 +848,7 @@ Send \verb|403 Forbidden|.
                        & \verb|transmitter_groups       :| \ref{protocoldef:inputvalidation:transmittergroup} \\
                        & \verb|cyclic_transmit          :| boolean \\
                        & \verb|cyclic_transmit_interval :| \ref{protocoldef:inputvalidation:rubricinterval} \\
-                       & \verb|owners                   :| \ref{protocoldef:inputvalidation:owners} \\
+                       & \verb|owners                   :| \ref{protocoldef:inputvalidation:owners} \\ \hline
   \end{tabular}
 \end{table}
 
@@ -907,7 +907,7 @@ Send \verb|403 Forbidden|.
 Edit is differentiated from create by the presence of the \colorbox{red}{\texttt{\_rev}} field.
 
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Edit the existing node <nodename>.\\ \hline
     Permission         & \verb|rubric.update/<rubricname>| \\ \hline
@@ -923,7 +923,7 @@ Edit is differentiated from create by the presence of the \colorbox{red}{\texttt
                        & \verb|transmitter_groups       :| \ref{protocoldef:inputvalidation:transmittergroup} \\
                        & \verb|cyclic_transmit          :| boolean \\
                        & \verb|cyclic_transmit_interval :| \ref{protocoldef:inputvalidation:rubricinterval} \\
-                       & \verb|owners                   :| \ref{protocoldef:inputvalidation:owners} \\
+                       & \verb|owners                   :| \ref{protocoldef:inputvalidation:owners} \\ \hline
 
   \end{tabular}
 \end{table}
@@ -957,7 +957,7 @@ Send \verb|403 Forbidden|.
 \subsubsection{DELETE /rubrics/<rubricname>?rev=<rev>}
 \label{protocoldef:microservicesapi:database:deleterubrics}
 \begin{table}[htbp]
-  \begin{tabular}{|l|p{10cm}|} \hline
+  \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Delete node <nodename>\\ \hline
     Permission         & \verb|rubric.delete/<rubricname>| \\ \hline
@@ -975,13 +975,18 @@ Send \verb|403 Forbidden|.
 \newpage
 \subsubsection{GET /subscribers}
 \label{protocoldef:microservicesapi:database:subscribers}
-Returns all nodes with all details in JSON format.
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Returns all subscribers (depending on the filtering in \ref{protocoldef:filteringandpagination} in JSON format. \\ \hline
+    Permission         & \verb|subscriber.read| \\ \hline
+    Mapping to CouchDB & \verb|GET /subscribers/_design/subscribers/_view/byId?include_docs=true|\\ \hline
+  \end{tabular}
+\end{table}
 
-Mapping to CouchDB:\\
-\verb|GET /nodes/_all_docs?include_docs=true|
-Filter couchDB output to produce just the output below:
+\textbf{Auth response: \texttt{true} or \texttt{limited}:}\\
+\begin{lstlisting}
 
-Role \textbf{admin} or \textbf{support} example result:
 \begin{lstlisting}
 {
   "total_rows": 1,
@@ -1016,102 +1021,103 @@ Role \textbf{admin} or \textbf{support} example result:
 }
 \end{lstlisting}
 
-Role \textbf{user} example result. If the user is one of the owners of a the subscribere, display also the detail-Information, like in the in the second array entry. Here dh3wr is requesting.
-\begin{lstlisting}
+\textbf{Auth response: \texttt{false}:}\\
+Send \verb|403 Forbidden|.
 
+\newpage
+\subsubsection{GET /subscribers/<subscribername>}
+\label{protocoldef:microservicesapi:database:getsubscribername}
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Return details of <subscribername> in JSON format. \\ \hline
+    Permission         & \verb|subscriber.read/<subscribername>| \\ \hline
+    Mapping to CouchDB & \verb|GET /subscriber/<subscribername>| \\ \hline
+  \end{tabular}
+\end{table}
+
+
+\textbf{Auth response: \texttt{true} or \texttt{limited}:}\\
+\begin{lstlisting}
 {
-  "total_rows": 2,
-  "offset": 0,
-  "rows": [
+  "_id": "dl1abc",
+  "_rev": "1-44182aeb25815b19babe1c0a6bb95e68",
+  "description": "Peter",
+  "pagers": [
     {
-      "_id": "dl1abc",
-      "description": "Peter",
-      "pagers": [
-        {
-          "ric": 123456,
-          "function": 3,
-          "name": "Peters Alphapoc",
-          "type": "alphaPpoc",
-          "enabled": true
-        }
-      ],
-      "owners": [
-        "dl1abc"
-      ]
-    },
-    {
-      "_id": "dh3wr",
-      "_rev": "1-44182aeb25815b19babe1c0a6bb95e68",
-      "description": "Ralf",
-      "pagers": [
-        {
-          "ric": 123456,
-          "function": 3,
-          "name": "Ralfs Skyper",
-          "type": "skyper",
-          "enabled": false
-        }
-      ],
-      "third_party_services": [
-        "APRS",
-        "BM"
-      ],
-      "owners": [
-        "dl1abc",
-        "dh3wr"
-      ],
-      "groups": [
-       "rwth-afu"
-      ]
-    }
+      "ric": 123456,
+      "function": 3,
+      "name": "Peters Alphapoc",
+      "type": "alphaPpoc",
+      "enabled": true
+    } 
+  ],
+  "third_party_services": [
+    "APRS",
+    "BM"
+  ],
+  "owners": [
+    "dh3wr",
+    "dl1abc"
+  ],
+  "groups": [
+    "rwth-afu"
   ]
 }
 \end{lstlisting}
 
+\textbf{Auth response: \texttt{false}:}\\
+Send \verb|403 Forbidden|.
 
-\subsubsection{GET /subscribers/<subscribername>}
-\label{protocoldef:microservicesapi:database:getrubricname}
-Return all setting details just of <subscribername> in JSON format. \ref{protocoldef:microservicesapi:database:subscribername}.
-
-Mapping to CouchDB :\\
-\verb|GET /subscribers/<subscribername>|
-
-Filter output according to role as in section \ref{protocoldef:microservicesapi:database:subscribers}.
-
+\newpage
 \subsubsection{GET /subscribers/\_names}
-Return just an JSON array of all subscribers. Used where selections have to be done on the website.\\
-Mapping to CouchDB with filtering in microservice:\\
-\verb|GET /subscribers/_design/subscribers/_list/names/byId|
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Return just an JSON array of all subscribers. Used where selections have to be done on the website. \\ \hline
+    Permission         & \verb|rubric.list| \\ \hline
+    Mapping to CouchDB & \verb|GET /subscribers/_design/subscribers/_list/names/byId| \\ \hline
+  \end{tabular}
+\end{table}
 
-All roles example result:
+
+\textbf{Auth response: \texttt{true} or \texttt{limited}:}\\
 \begin{lstlisting}
-{
-  ["dh3wr","dl2ic"]
-}
+["dh3wr","dl2ic"]
 \end{lstlisting}
+
+\textbf{Auth response: \texttt{false}:}\\
+Send \verb|403 Forbidden|.
+
 
 \subsubsection{GET /subscribers/\_descriptions}
-Return just an JSON array of all subscribers and their description. Used where selections have to be done on the website.\\
-Mapping to CouchDB with filtering in microservice:\\
-\verb|GET /subscribers/_design/subscribers/_list/descriptions/descriptions|
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Return just an JSON array of all subscribers and their descriptions. Used where selections have to be done on the website. \\ \hline
+    Permission         & \verb|rubric.list| \\ \hline
+    Mapping to CouchDB & \verb|GET /subscribers/_design/subscribers/_list/descriptions/descriptions| \\ \hline
+  \end{tabular}
+\end{table}
 
-All roles example result:
+\textbf{Auth response: \texttt{true} or \texttt{limited}:}\\
 \begin{lstlisting}
-{
-  [
-    {
-      "_id": "dh3wr,
-      "description: "Ralf"
-    },
-    {
-      "_id": "dl2ic,
-      "description: "Thomas"
-    }
-  ]
-}
+[
+  {
+    "_id": "dh3wr",
+    "description": "Ralf"
+  },
+  {
+    "_id": "dl2ic",
+    "description": "Thomas"
+  }
+]
 \end{lstlisting}
 
+\textbf{Auth response: \texttt{false}:}\\
+Send \verb|403 Forbidden|.
 
+\newpage
 \subsubsection{PUT /subscribers - Add new subscriber}
 
 Role \textbf{user} gets \verb|403 Forbidden|
