@@ -2,10 +2,10 @@
 
 \section{Input Data Validation}
 
-\subsection{Username}
-\label{protocoldef:inputvalidation:username}
-First transform to lowercase and remove whitespaces everywhere in the String. Then check against
-\verb|^[a-z0-9._\-\?]{3,40}$|
+\subsection{Name}
+\label{protocoldef:inputvalidation:name}
+First transform to lowercase and remove whitespaces everywhere in the String. Then check against\\
+\verb|^[a-z0-9._\-]{3,40}$|
 
 \subsection{Bcrypt Hash}
 \label{protocoldef:inputvalidation:bcrypt}
@@ -13,18 +13,41 @@ First transform to lowercase and remove whitespaces everywhere in the String. Th
 
 \subsection{Email Address}
 \label{protocoldef:inputvalidation:email}
-\begin{Verbatim}
-\A(?=[a-z0-9@.!#$%&'*+/=?^_`{|}~-]{6,254}\z)(?=[a-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@)\\
-[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@\\
-(?:(?=[a-z0-9-]{1,63}\.)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+\\
-(?=[a-z0-9-]{1,63}\z)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z
-\end{Verbatim}
+\verb|/.+@.+\..+/i|\\
+The user MMI should do a precheck on the email address. Example for NodeJs: \url{https://github.com/mailcheck/mailcheck}.
 
 \subsection{Roles}
 \label{protocoldef:inputvalidation:roles}
 Get the actual set of allowed roles from the Auth Service at startup and check that the given value is in the returned array. See \ref{protocoldef:auth:api} for the API call to the Auth Service.
 The JSON Value must be an Array with at least one entry. All entries must be a valid role. All entries have to be different, no repetitions of given roles are allow. They have to be filtered out if they exist.
 
+\subsection{Auth Key}
+\label{protocoldef:inputvalidation:authkey}
+\verb|^[a-zA-Z0-9]{3,40}$|
+
+\subsection{Owners}
+\label{protocoldef:inputvalidation:owners}
+Each entry of the array must validate successfully against \ref{protocoldef:inputvalidation:name}. No checking, if username is existing. The array must contain at least one element.
+
+\subsection{Rubric Number}
+\label{protocoldef:inputvalidation:rubricnumber}
+The rubric number must be an integer >= 1 and <= 95.
+
+\subsection{Rubric Label}
+\label{protocoldef:inputvalidation:rubriclabel}
+String with only \verb|a-zA-Z0-9_-| and max length of TBD.
+
+\subsection{Transmitter Groups}
+\label{protocoldef:inputvalidation:transmittergroup}
+String with only \verb|a-zA-Z0-9_-| and max length of TBD.
+
+\subsection{Rubric Cyclic Transmit Interval}
+\label{protocoldef:inputvalidation:cyclic_transmit_interval}
+Integer value between 0 and 60*60*24*30.
+
+\subsection{Description}
+\label{protocoldef:inputvalidation:description}
+The description has to be a string with arbitrary content. Max length 45 characters.
 
 \section{Microservices API}
 \label{protocoldef:microservicesapi}
@@ -194,7 +217,7 @@ Send \verb|403 Forbidden|.
     Permission         & \verb|user.create| \\ \hline
     Mapping to CouchDB & \verb|PUT /users/<username>|\\ \hline
     Mandatory fields   & \verb|_id, password, email, roles, enabled| \\ \hline
-    Field validation   & \verb|_id      :| \ref{protocoldef:inputvalidation:username}| \\
+    Field validation   & \verb|_id      :| \ref{protocoldef:inputvalidation:name}| \\
                        & \verb|password :| \ref{protocoldef:inputvalidation:bcrypt} \\
                        & \verb|email    :| \ref{protocoldef:inputvalidation:email} \\
                        & \verb|roles    :| \ref{protocoldef:inputvalidation:roles} \\
@@ -328,7 +351,7 @@ Send \verb|403 Forbidden|.
 \begin{table}[htbp]
   \begin{tabular}{|l|p{10cm}|} \hline
     Item               & Description  \\ \hline \hline
-    Description        &  Returns all users (depending on the filtering in \ref{protocoldef:filteringandpagination} in JSON format. \\ \hline
+    Description        & Returns all users (depending on the filtering in \ref{protocoldef:filteringandpagination} in JSON format. \\ \hline
     Permission         & \verb|node.read| \\ \hline
     Mapping to CouchDB & \verb|GET /users/_design/nodes/_view/byId?include_docs=true|\\ \hline
   \end{tabular}
@@ -520,6 +543,11 @@ Send \verb|403 Forbidden|.
     Permission         & \verb|node.create| \\ \hline
     Mapping to CouchDB & \verb|PUT /nodes/<nodesname>|\\ \hline
     Mandatory fields   & \verb|_id, auth_key, hamcloud, owners, description| \\ \hline
+    Field validation   & \verb|_id         :| \ref{protocoldef:inputvalidation:name}| \\
+                       & \verb|auth_key    :| \ref{protocoldef:inputvalidation:authkey} \\
+                       & \verb|hamcloud    :| boolean \\
+                       & \verb|owners      :| \ref{protocoldef:inputvalidation:owners} \\
+                       & \verb|description :| \ref{protocoldef:inputvalidation:description}\\ \hline
   \end{tabular}
 \end{table}
 
@@ -544,7 +572,7 @@ Mapping to CouchDB with adding \verb|created_*| information by database microser
   "coordinates": [34.123456, -23.123456],
   "description": "some words about that node",
   "hamcloud": true,
-  "owners": ["dl1abc","dh3wr","dl2ic"]
+  "owners": ["dl1abc","dh3wr","dl2ic"],
   "created_on": "2018-07-08T11:50:02.168325Z",
   "created_by": <username from basic-auth>
 }
@@ -566,6 +594,13 @@ Edit is differentiated from create by the presence of the \colorbox{red}{\texttt
     Mapping to CouchDB & \verb|PUT /nodes/<nodename>|\\ \hline
     Mandatory fields   & \verb|_id, _rev| (\verb|\rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:getnodes/nodename})\\ \hline
     Optional fields    & \verb|auth_key, hamcloud, owners, description| (minimum one)\\ \hline
+    Field validation   & \verb|_id         :| Let CouchDB decide, as the entry is already present. \\
+                       & \verb|_rev        :| Let CouchDB decide, as the entry is already present. \\
+                       & \verb|auth_key    :| \ref{protocoldef:inputvalidation:authkey} \\
+                       & \verb|hamcloud    :| boolean \\
+                       & \verb|owners      :| \ref{protocoldef:inputvalidation:owners} \\
+                       & \verb|description :| \ref{protocoldef:inputvalidation:description}\\ \hline
+
   \end{tabular}
 \end{table}
 
@@ -579,7 +614,6 @@ User to Database-Service: Example content to edit user dl6pt setting new passwor
 }
 \end{lstlisting}
 
-
 Mapping to CouchDB with adding \verb|updated_*| information by database microservice:\\
 \verb|PUT /users/<username>|
 \begin{lstlisting}
@@ -591,6 +625,10 @@ Mapping to CouchDB with adding \verb|updated_*| information by database microser
   "updated_by": <username from basic-auth>
 }
 \end{lstlisting}
+
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
 
 \subsubsection{DELETE /nodes/<nodename>?rev=<rev>}
 \label{protocoldef:microservicesapi:database:deletenodes}
@@ -615,13 +653,17 @@ Send \verb|403 Forbidden|.
 \newpage
 \subsubsection{GET /rubrics}
 \label{protocoldef:microservicesapi:database:getrubrics}
-Returns all rubrics with all setting details in JSON format. This does \textbf{not} include the content of the 10 rubric message slots.
 
-Mapping to CouchDB:\\
-\verb|GET /rubrics/_all_docs?include_docs=true|
-Filter couchDB output to produce just the output below:
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Returns all rubrics (depending on the filtering in \ref{protocoldef:filteringandpagination} in JSON format. \\ \hline
+    Permission         & \verb|rubric.read| \\ \hline
+    Mapping to CouchDB & \verb|GET /rubrics/_design/rubrics/_view/byId?include_docs=true|\\ \hline
+  \end{tabular}
+\end{table}
 
-All allowed roles example result:
+\textbf{Auth response: \texttt{true}:}\\
 \begin{lstlisting}
 {
   "total_rows": 1,
@@ -650,68 +692,74 @@ All allowed roles example result:
 }
 \end{lstlisting}
 
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
+\newpage
 \subsubsection{GET /rubrics/\_view/byNumber?startkey=<n>\&endkey=<m>}
-Just get the output as in section \ref{protocoldef:microservicesapi:database:rubrics}, but just for rubric numbers between <n> and <m>. Check before passing the request to CouchDB, that neither <n> nor <m> are higher then 95.
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Get the output as in section \ref{protocoldef:microservicesapi:database:rubrics}, but just for rubric numbers between <n> and <m>. \\ \hline
+    Permission         & \verb|rubric.read| \\ \hline
+    Mapping to CouchDB & \verb|GET /rubrics/\_view/byNumber?startkey=<n>\&endkey=<m>| \\ \hline
+    Field validation   & \verb|startkey :| \ref{protocoldef:inputvalidation:rubricnumber}| \\
+                       & \verb|endkey   :| \ref{protocoldef:inputvalidation:rubricnumber}| \\ \hline
+  \end{tabular}
+\end{table}
+Auth handling is the same as in section \ref{protocoldef:microservicesapi:database:rubrics}.
 
-\subsubsection{GET /rubrics/\_view/byTransmitter?key="db0abc"}
-Just get the output as in section \ref{protocoldef:microservicesapi:database:rubrics}, but just for rubric that contain \textit{db0abc} in the \verb|"transmitters"| array.
 
-\subsubsection{GET /rubrics/\_view/byTransmitterGroup?key="dh-hh"}
-Just get the output as in section \ref{protocoldef:microservicesapi:database:rubrics}, but just for rubric that contain \textit{dl-hh} in the \verb|"transmitter_groups"| array.
+\subsubsection{GET /rubrics/\_view/byTransmitter?key=<transmittername>}
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Get the output as in section \ref{protocoldef:microservicesapi:database:rubrics}, but just for rubrics that contain <transmittername> in the \verb|"transmitters"| array. \\ \hline
+    Permission         & \verb|rubric.read| \\ \hline
+    Mapping to CouchDB & \verb|GET /rubrics/\_view/byTransmitter?key=<transmittername>| \\ \hline
+  \end{tabular}
+\end{table}
+Auth handling is the same as in section \ref{protocoldef:microservicesapi:database:rubrics}.
+
+\subsubsection{GET /rubrics/\_view/byTransmitterGroup?key=<groupname>}
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Get the output as in section \ref{protocoldef:microservicesapi:database:rubrics}, but just for rubrics that contains <groupname> in the \verb|"transmitter_groups"| array. \\ \hline
+    Permission         & \verb|rubric.read| \\ \hline
+    Mapping to CouchDB & \verb|GET /rubrics/\_view/byTransmitterGroup?key=<groupname>| \\ \hline
+  \end{tabular}
+\end{table}
+Auth handling is the same as in section \ref{protocoldef:microservicesapi:database:rubrics}.
 
 \subsubsection{GET /rubrics/\_view/withCyclicTransmit}
-Just get the output as in section \ref{protocoldef:microservicesapi:database:rubrics}, but just for rubric that have the cyclic transmit flag enabled.
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Get the output as in section \ref{protocoldef:microservicesapi:database:rubrics}, but just for rubric that have the cyclic transmit flag enabled. \\ \hline
+    Permission         & \verb|rubric.read| \\ \hline
+    Mapping to CouchDB & \verb|GET /rubrics/\_view/withCyclicTransmit| \\ \hline
+  \end{tabular}
+\end{table}
+Auth handling is the same as in section \ref{protocoldef:microservicesapi:database:rubrics}.
 
+\newpage
 \subsubsection{GET /rubrics/<rubricname>}
 \label{protocoldef:microservicesapi:database:getrubrics/rubricname}
-Return all setting details just of <rubricname> in JSON format. This does \textbf{not} include the content of the 10 rubric message slots. Output as in section \ref{protocoldef:microservicesapi:database:rubrics}.
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Return details of <rubricname> in JSON format. This does \textbf{not} include the content of the 10 rubric message slots. \\ \hline
+    Permission         & \verb|rubric.read/<username>| \\ \hline
+    Mapping to CouchDB & \verb|GET /rubric/<username>| \\ \hline
+  \end{tabular}
+\end{table}
 
-Mapping to CouchDB :\\
-\verb|GET /rubrics/<rubricname>|
-
-
-\subsubsection{GET /rubrics/\_names}
-\label{protocoldef:microservicesapi:database:getrubrics/_names}
-Return just an JSON array of all rubricnames in a JSON Array. Allowed with all roles. Used where selections have to be done on the website.
-Mapping to CouchDB: \verb|GET /rubrics/_design/rubrics/_list/names/byId|
-
-For all roles example result:
-\begin{lstlisting}
-{
-  ["dl-hh", "dl-nw"]
-}
-\end{lstlisting}
-
-\subsubsection{GET /rubrics/\_descriptions}
-\label{protocoldef:microservicesapi:database:getrubrics/_descriptions}
-Return just an JSON array of all rubricnames and their description in a JSON Array. Allowed with all roles. Used where selections have to be done on the website.
-Mapping to CouchDB: \verb|GET /rubrics/_design/rubrics/_list/descriptions/descriptions|
-
-For all roles example result:
-\begin{lstlisting}
-{
-  [
-    {
-      "_id": "dl-hh",
-      "description": "Germany, Hamburg"
-    },
-    {
-      "_id": "dl-by",
-      "description": "Bavaria"
-    }
-  ]  
-}
-\end{lstlisting}
-
-\subsubsection{PUT /rubrics - Add new rubric}
-\label{protocoldef:microservicesapi:database:putrubrics/rubrics_create}
-Role \textbf{user} gets \verb|403 Forbidden|.
-
-Only role \textbf{admin} and \textbf{support} is allowed.\\
-Example POST message to send:
+\textbf{Auth response: \texttt{true}:}\\
 \begin{lstlisting}
 {
   "_id": "dx-kw",
+  "_rev": "1-166c3257894d0aea8ee68c1861ca508a",
   "number": 4,
   "description": "DX Cluster Spots KW",
   "label": "DX KW",
@@ -730,38 +778,201 @@ Example POST message to send:
 }
 \end{lstlisting}
 
-\subsubsection{PUT /rubrics - Edit existing rubric}
-\label{protocoldef:microservicesapi:database:putrubrics/rubrics_update}
-This is just about the rubrics details, and does \textbf{not} include the content of the 10 rubric message slots.
 
-Role \textbf{admin} and \textbf{support} are allowed to do changes.\\
-Role \textbf{user} gets returned \verb|403 Forbidden|.
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
 
-First get rubric like in section \ref{protocoldef:microservicesapi:database:getrubricname} to get the revision. Then send the PUT request with just the changed values. The \verb|_id| and \verb|_rev| must be sent always.
+\subsubsection{GET /rubrics/\_names}
+\label{protocoldef:microservicesapi:database:getrubrics/_names}
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Return just an JSON array of all rubricnames. Used where selections have to be done on the website. \\ \hline
+    Permission         & \verb|rubrics.list| \\ \hline
+    Mapping to CouchDB & \verb|GET /rubrics/_design/rubrics/_list/names/byId|\\ \hline
+  \end{tabular}
+\end{table}
 
-Example POST message to send:
+\textbf{Auth response: \texttt{true}:}
+\begin{lstlisting}
+["dl-hh", "dl-nw"]
+\end{lstlisting}
+
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
+\newpage
+\subsubsection{GET /rubrics/\_descriptions}
+\label{protocoldef:microservicesapi:database:getrubrics/_descriptions}
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Return just an JSON array of all rubricnames their description in a JSON Array. Used where selections have to be done on the website. \\ \hline
+    Permission         & \verb|rubrics.list| \\ \hline
+    Mapping to CouchDB & \verb|GET /rubrics/_design/rubrics/_list/descriptions/descriptions|\\ \hline
+  \end{tabular}
+\end{table}
+
+\textbf{Auth response: \texttt{true}:}
+\begin{lstlisting}
+[
+  {
+    "_id": "dl-hh",
+    "description": "Germany, Hamburg"
+  },
+  {
+    "_id": "dl-by",
+    "description": "Bavaria"
+  }
+]  
+\end{lstlisting}
+
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
+
+\subsubsection{PUT /rubrics - Add new rubric}
+\label{protocoldef:microservicesapi:database:putrubrics/rubrics_create}
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Add a non-existing new rubric with \_id <rubricname>\\ \hline
+    Permission         & \verb|rubric.create| \\ \hline
+    Mapping to CouchDB & \verb|PUT /rubrics/<rubricsname>|\\ \hline
+    Mandatory fields   & \verb|_id, number, description, label, transmitter_groups,| \\
+                       & \verb|cyclic_transmit, cyclic_transmit_interval, owners| \\ \hline
+    Field validation   & \verb|_id                      :| \ref{protocoldef:inputvalidation:name}| \\
+                       & \verb|number                   :| \ref{protocoldef:inputvalidation:rubricnumber} \\
+                       & \verb|description              :| \ref{protocoldef:inputvalidation:description} \\
+                       & \verb|label                    :| \ref{protocoldef:inputvalidation:rubriclabel} \\
+                       & \verb|transmitter_groups       :| \ref{protocoldef:inputvalidation:transmittergroup} \\
+                       & \verb|cyclic_transmit          :| boolean \\
+                       & \verb|cyclic_transmit_interval :| \ref{protocoldef:inputvalidation:rubricinterval} \\
+                       & \verb|owners                   :| \ref{protocoldef:inputvalidation:owners} \\
+  \end{tabular}
+\end{table}
+
+\textbf{Auth response: \texttt{true}:}
+User to Database-Service: Example content to add rubric dx-kw
 \begin{lstlisting}
 {
   "_id": "dx-kw",
-  "_rev": "1-166c3257894d0aea8ee68c1861ca508a",
-  "description": "DX Cluster Spots KW"
+  "number": 4,
+  "description": "DX Cluster Spots KW",
+  "label": "DX KW",
+  "transmitter_groups": [
+    "dl-hh"
+  ],
+  "transmitters": [
+    "db0abc"
+  ],
+  "cyclic_transmit": false,
+  "cyclic_transmit_interval": 0,
+  "owners": [
+    "dh3wr",
+    "dl1abc"
+  ]
 }
 \end{lstlisting}
 
+Mapping to CouchDB with adding \verb|created_*| information by database microservice:\\
+\begin{lstlisting}
+{
+  "_id": "dx-kw",
+  "number": 4,
+  "description": "DX Cluster Spots KW",
+  "label": "DX KW",
+  "transmitter_groups": [
+    "dl-hh"
+  ],
+  "transmitters": [
+    "db0abc"
+  ],
+  "cyclic_transmit": false,
+  "cyclic_transmit_interval": 0,
+  "owners": [
+    "dh3wr",
+    "dl1abc"
+  ],
+  "created_on": "2018-07-08T11:50:02.168325Z",
+  "created_by": <username from basic-auth>
+}
+\end{lstlisting}
 
-\subsubsection{DELETE /rubrics/<rubricname>?rev=}
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
+\subsubsection{PUT /rubrics - Edit existing rubric}
+\label{protocoldef:microservicesapi:database:putrubrics/rubrics_update}
+Edit is differentiated from create by the presence of the \colorbox{red}{\texttt{\_rev}} field.
+
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Edit the existing node <nodename>.\\ \hline
+    Permission         & \verb|rubric.update/<rubricname>| \\ \hline
+    Mapping to CouchDB & \verb|PUT /rubrics/<rubricsname>|\\ \hline
+    Mandatory fields   & \verb|_id, _rev| (\verb|\rev| has to be obtained as in \ref{protocoldef:microservicesapi:database:getrubrics/rubricname})\\ \hline
+    Optional fields    & \verb|number, description, label, transmitter_groups,| \\
+                       & \verb|cyclic_transmit, cyclic_transmit_interval, owners| (minimum one)\\ \hline
+    Field validation   & \verb|_id                      :| Let CouchDB decide, as the entry is already present. \\
+                       & \verb|_rev                     :| Let CouchDB decide, as the entry is already present. \\
+                       & \verb|number                   :| \ref{protocoldef:inputvalidation:rubricnumber} \\
+                       & \verb|description              :| \ref{protocoldef:inputvalidation:description} \\
+                       & \verb|label                    :| \ref{protocoldef:inputvalidation:rubriclabel} \\
+                       & \verb|transmitter_groups       :| \ref{protocoldef:inputvalidation:transmittergroup} \\
+                       & \verb|cyclic_transmit          :| boolean \\
+                       & \verb|cyclic_transmit_interval :| \ref{protocoldef:inputvalidation:rubricinterval} \\
+                       & \verb|owners                   :| \ref{protocoldef:inputvalidation:owners} \\
+
+  \end{tabular}
+\end{table}
+
+\textbf{Auth response: \texttt{true}:}\\
+User to Database-Service: Example content to edit to add rubric dx-kw changing the description
+\begin{lstlisting}
+{
+  "_id": "db0sda-dc2",
+  "_rev": "1-ee070b17db9c3c58658d10fdedad2f48",
+  "description": "New DX Cluster Spots KW",
+}
+\end{lstlisting}
+
+Mapping to CouchDB with adding \verb|updated_*| information by database microservice:\\
+\verb|PUT /users/<username>|
+\begin{lstlisting}
+{
+  "_id": "db0sda-dc2",
+  "_rev": "1-ee070b17db9c3c58658d10fdedad2f48",
+  "description": "New DX Cluster Spots KW",
+  "updated_on": "2018-07-08T11:50:02.168325Z",
+  "updated_by": <username from basic-auth>
+}
+\end{lstlisting}
+
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
+
+\subsubsection{DELETE /rubrics/<rubricname>?rev=<rev>}
 \label{protocoldef:microservicesapi:database:deleterubrics}
-Delete rubric <rubricname>.\\
-\textbf{Also delete content of this rubric.}
-\todo{Noch herausfinden, wie das genau geht.}
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Delete node <nodename>\\ \hline
+    Permission         & \verb|rubric.delete/<rubricname>| \\ \hline
+    Mapping to CouchDB & \verb|DELETE /rubrics/<rubricname>?rev=<rev>|\\ \hline
+    Mandatory fields   & \verb|_rev| as parameter (\verb|\rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:getrubrics/rubricname})\\ \hline
+  \end{tabular}
+\end{table}
 
-Role \textbf{admin} and \textbf{support} are allowed.\\
-Role \textbf{user} gets returned \verb|403 Forbidden|.
+\textbf{Auth response: \texttt{true}:}\\
+Transparent forwarding.
 
-First get the rubric's revision as in \ref{protocoldef:microservicesapi:database:getrubricname}.\\
-User to API: \verb|DELETE /rubrics/<rubricname>?rev=1-09352254509c9ddf86e80fd83868d557|
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
 
-
+\newpage
 \subsubsection{GET /subscribers}
 \label{protocoldef:microservicesapi:database:subscribers}
 Returns all nodes with all details in JSON format.
