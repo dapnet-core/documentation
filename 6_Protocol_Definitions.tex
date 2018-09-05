@@ -1357,20 +1357,19 @@ Send \verb|403 Forbidden|.
 \textbf{Auth response: \texttt{false}:}\\
 Send \verb|403 Forbidden|.
 
-\subsubsection{GET /transmitters/\_view/groups}
+\subsubsection{GET /transmitters/\_groups}
 \begin{table}[htbp]
   \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Returns a JSON array of used transmitter groups tags from all known transmitters. Used for a suggestion of already existing transmitter group tags on the website.\\ \hline
     Permission         & \verb|transmitter.list| \\ \hline
-    Mapping to CouchDB & \verb|GET /transmitters/ ??? UNKNOWN FIXME|\\ \hline
+    Mapping to CouchDB & \verb|GET /transmitters/_design/transmitters/_list/groups/byGroup?group_level=4|\\ \hline
   \end{tabular}
 \end{table}
-\todo{generate CouchDB Request}
 
 \textbf{Auth response: \texttt{true} or \texttt{limited}:}\\
 \begin{lstlisting}
-["dl", "all"]
+["dl.nw.koeln.aachen","dxluster.dl","testinggroup"]
 \end{lstlisting}
 
 \textbf{Auth response: \texttt{false}:}\\
