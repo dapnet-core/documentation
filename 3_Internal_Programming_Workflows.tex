@@ -86,12 +86,55 @@ content is also updated.
 
 \section{Microservices}
 \label{internalprog:microservices}
-
 A DAPNET node consists of serveral isolated microservices with different
 responsibilities. Each microservice runs in a container and is automatically
 restarted if it should crash. Some microservices can be started in multiple
-instances to fully utilize multiple cores. The access to the microservices is
-proxied by a NGINX webserver which can also provide load balancing and caching.
+instances to fully utilize multiple cores.
+
+\subsection{Overview of Microservices}
+\label{internalprog:microservices:overview}
+
+\subsubsection{Database Service}
+\label{internalprog:microservices:overview:database}
+
+\subsubsection{Rubric Service}
+\label{internalprog:microservices:overview:rubric}
+
+\subsubsection{Call Service}
+\label{internalprog:microservices:call}
+
+\subsubsection{Transmitter Service}
+\label{internalprog:microservices:transmitter}
+
+\subsubsection{Cluster Service}
+\label{internalprog:microservices:overview:cluster}
+
+\subsubsection{Telemetry Service}
+\label{internalprog:microservices:overview:telemetry}
+
+\subsubsection{Database Changes Service}
+\label{internalprog:microservices:overview:databasechanges}
+
+\subsubsection{Status Service}
+\label{internalprog:microservices:overview:status}
+
+\subsubsection{Statistics Service}
+\label{internalprog:microservices:overview:statistics}
+
+\subsubsection{RabbitMQ Auth Service}
+\label{internalprog:microservices:overview:rabbitmqauth}
+
+\subsubsection{Backward Compatibility Service}
+\label{internalprog:microservices:overview:backwardcompatibility}
+
+\subsubsection{Coverage Service}
+\label{internalprog:microservices:overview:coverage}
+
+
+
+
+\subsection{REST Interfaces}
+The access to the microservices is proxied by a NGINX webserver which can also provide load balancing and caching.
 
 \begin{center}
   \begin{tabular}{|l|l|} \hline
@@ -145,6 +188,8 @@ proxied by a NGINX webserver which can also provide load balancing and caching.
 \item Receives all calls from RabbitMQ
 \item Maintains a database of all calls
 \end{itemize}
+
+The 
 
 \subsection{Rubric Service}
 \begin{itemize}

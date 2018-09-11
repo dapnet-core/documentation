@@ -2329,29 +2329,29 @@ The value in \verb|< >| is always the resource to be accessed.\\
 
 \section{RabbitMQ}
 \label{protocoldef:RabbitMQ}
+
+\subsection{Concept of Calls distribution}
+\label{protocoldef:RabbitMQ:calldistribution}
+
 There are 3 exchanges available on each RabbitMQ instance:
 \begin{description}
 \item[dapnet.calls] Messages shared between all nodes
-\item[dapnet.local\_calls] Messages coming from the local node instance
+\item[dapnet.local\_calls] Messages to the local connected transmitters
 \item[dapnet.telemetry] Messages containing telemetry from transmitters
 \end{description}
 
+The concept of distribution calls is a two-stage approach. On \texttt{dapnet.calls} the calls are distributed among all Nodes forming the DAPNET cluster on an abstract level, where e.g. the resolution from recipient callsigns to their corresponding RICs is not done. Each DAPNET node will listen to this exchange and generate the messages for the locally connected transmitter upon arrival. The selection of transmitters selected by transmitter group tags, explicit transmitter selection or by a polygon coverage area is done on each node. Processed calls will be sent to the \texttt{dapnet.local\_calls} exchange just for the connected transmitters to each node. Receiver hardware equipment dependent encoding will also be done during the processing of the calls from \texttt{dapnet.calls} to \texttt{dapnet.local\_calls} on each calls taking into account the stored hardware type of each pager stored in the CouchDB subscriber. Both personal pagings and rubric related messages are transmitted on the \texttt{dapnet.calls} exchange.
 
-\subsection{Transmitters}
-\label{protocoldef:RabbitMQ:Transmitters}
+
+\subsection{Message definition on Exchanges}
+\label{protocoldef:RabbitMQ:exchangesdifinition}
+
 
 Valid Messages are:
 
 \subsubsection{dapnet.calls}
 \label{protocoldef:RabbitMQ:dapnet.calls}
-The messages to transfer data to be transmitted by the transmitter have the
-following format.
-
-For each transmission, there is a separate RabbitMQ message, as different
-receivers might need different text encoding. All encoding is already done, when
-this message is created. The transmitter does no character encoding at all. Both
-personal pagings and rubric related messages are transmitted with this protocol.
-
+The messages to call transfer data between the nodes in an not-processed status are the 
 \begin{lstlisting}
 {
   "id": "016c25fd-70e0-56fe-9d1a-56e80fa20b82",
@@ -2359,21 +2359,45 @@ personal pagings and rubric related messages are transmitted with this protocol.
   "priority": 3,
   "expires": "2018-07-03T08:00:52.786458Z",
   "message": {
-    "ric": 12342, (max 21 Bits)
-    "type": "alphanum", | "numeric"
-    "speed": 1200,
-    "function": 0 to 3,
-    "data": "Lorem ipsum dolor sit amet"
+    "data": "Lorem ipsum dolor sit amet",
+    "type": "personal"|"rubric"
+  },
+  "recipients": ["subscriber1","subscriber2",...], (only for "type": "personal")
+  "emmiting_node": "db0sda-dc2",
+  "distribution" : {
+    "transmitters" : ["db0abc"],
+    "transmitter_groups": ["dl-all"],
+    "area": [
+      [50.1, 6.0, 50.1, 7.0, 51.2, 6.0, 51.2, 7.0],...
+    ]
   }
 }
 \end{lstlisting}
-The selection of the transmitter is done by means of the routing key. Besides,
-the priority is also used in the RabbitMQ queuing to deliver higher priority
-messages first.
 
 \subsubsection{dapnet.local\_calls}
 \label{protocoldef:RabbitMQ:dapnet.local_calls}
-Same as for the the network originated calls in section \ref{protocoldef:RabbitMQ:dapnet.calls}.
+The RabbitMQ microservice will transform the high-level calls from \texttt{dapnet.calls} into individual messages on texttt{dapnet.local\_calls}. The selection of the transmitter is done by means of the routing key. Besides, the priority is also used in the RabbitMQ queuing to deliver higher priority messages first.
+
+Resolutions to be done are:
+\begin{description}
+\item["recipients"] Look up the RIC of every pagers in the subscriber and perform corresponding encoding dependent on the pager type.
+\item["distribution"] Resolve the \texttt{transmitter\_groups} into an array of corresponding transmitters, resolve the given area to the covering transmitters using the Coverage Microservice \ref{internalprog:microservices:overview:coverage}. The generated list of transmitters is used to send individual messages to each transmitter by means of the routing key. For each of the subscribers pager entries, a separate message will be sent.
+\end{description}
+
+The resulting message format is:
+\begin{lstlisting}
+{
+  "id": "016c25fd-70e0-56fe-9d1a-56e80fa20b82",
+  "protocol": "pocsag",
+  "priority": 3,
+  "expires": "2018-07-03T08:00:52.786458Z",
+  "encoded_message": "Lorem ipsum dolor sit amet",
+  "RIC": 12345,
+  "function": 0...3,
+  "emmiting_node": "db0sda-dc2",
+}
+\end{lstlisting}
+
 
 \subsection{Telemetry}
 On the telemetry exchange, all transmitters and nodes publish their telemetry messages. The format the same as in section \ref{protocoldef:telemetrytx} and \ref{protocoldef:telemetrynodes}.
