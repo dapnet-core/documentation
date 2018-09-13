@@ -2351,24 +2351,23 @@ Valid Messages are:
 
 \subsubsection{dapnet.calls}
 \label{protocoldef:RabbitMQ:dapnet.calls}
-The messages to call transfer data between the nodes in an not-processed status are the 
+The messages to call transfer data between the nodes in an not-processed status are the
 \begin{lstlisting}
 {
   "id": "016c25fd-70e0-56fe-9d1a-56e80fa20b82",
-  "protocol": "pocsag",
   "priority": 3,
   "expires": "2018-07-03T08:00:52.786458Z",
-  "message": {
-    "data": "Lorem ipsum dolor sit amet",
-    "type": "personal"|"rubric"
+  "origin": "db0sda-dc2",
+  "data": "Lorem ipsum dolor sit amet",
+  "recipients": {
+    "subscribers": ["subscriber1", "subscriber2"],
+    "subscriber_groups": ["rwth-afu"]
   },
-  "recipients": ["subscriber1","subscriber2",...], (only for "type": "personal")
-  "emmiting_node": "db0sda-dc2",
   "distribution" : {
     "transmitters" : ["db0abc"],
-    "transmitter_groups": ["dl-all"],
-    "area": [
-      [50.1, 6.0, 50.1, 7.0, 51.2, 6.0, 51.2, 7.0],...
+    "transmitter_groups": ["dl.nw"],
+    "areas": [
+      [[50.1, 6.0], [50.1, 7.0], [51.2, 6.0], [51.2, 7.0]]
     ]
   }
 }
@@ -2391,10 +2390,14 @@ The resulting message format is:
   "protocol": "pocsag",
   "priority": 3,
   "expires": "2018-07-03T08:00:52.786458Z",
-  "encoded_message": "Lorem ipsum dolor sit amet",
-  "RIC": 12345,
-  "function": 0...3,
-  "emmiting_node": "db0sda-dc2",
+  "origin": "db0sda-dc2",
+  "message": {
+    "ric": 12345,
+    "function": 0...3,
+    "type": "alphanum" | "numeric",
+    "speed": 1200,
+    "data": "Lorem ipsum dolor sit amet",
+  }
 }
 \end{lstlisting}
 
