@@ -1,0 +1,16 @@
+before_install:
+- sudo apt-get update
+- sudo apt-get install texlive-latex-extra texlive-fonts-recommended
+script:
+- pdflatex -output-directory ./ DAPNET\ 2.0\ Software\ internals.tex
+before_deploy:
+- git config --local user.name "Travis"
+- git config --local user.email "travis@travis-ci.org"
+- git tag "$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)"
+deploy:
+  provider: releases
+  api_key:
+    secure: Cd73SbCYGVdPSDEd03W7kfYd7cT5I83HtyQ6KJajGCg/urQYPpvo4zIUe11eJOpTYecgIhUlpYQ7mGI4FtzBnAOB0ZX/ympApss9pRp65LQ1hAft2s3ENsbBQFs3fdCRpWQrAi7IVLXYlcQqMrWPrmdXFHEMcbTYKgURFZN6OoxP+xlTsm7RDIGF1kDyFzF4kyWuTqKvOCShZqxBEwCIdUY8bnp7vm+E4ktxNjqW9ob9hzu8IZvZJoXmjzGydK1+kCk2JTA18BhLR3LBwkrF3OGpZE5zLodzQnqGrL7szkV/lo6Zrh0VY5mvKH7b6grdKuY0rY6J6XvkHZL9gWxt7nXvmbyzqeFXpYvCodJ6uydGpiaDWT/N1FhTM4hxAK3H2DmtR2o6zHLi9QdJkvrVj3DsrBhvi+Yoe/lSiuzsje+m85C2wbq5Y36QroQYcZmIXEuNdPmLoZL+KGuinQBlLgVApgbpt5S1VAD0LfZQOIiI1ylrluAlOc0xQeuaa4gVssCcIXASsp4e0FDcbRJb4GY1rbJFdSMMDW2stK7W2ieLuMW13fINzLdvj/SxZ1ZptE5f/zexNUONiB72OEWFK8G4hO7ucTU+GTNE0MAYZsxq3hE39J007QgB2tosP7BuiA2f7/TlNuJ5DK6qboETuDezzNbzEGYMaBUQJs9RTPo=
+  file: DAPNET\ 2.0\ Software\ internals.pdf
+  on:
+    repo: dapnet-core/documentation
