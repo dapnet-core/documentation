@@ -3,6 +3,7 @@ before_install:
 - sudo apt-get install texlive-latex-extra texlive-fonts-recommended
 script:
 - pdflatex -output-directory ./ DAPNET\ 2.0\ Software\ internals.tex
+- pdflatex -output-directory ./ DAPNET\ 2.0\ Software\ internals.tex
 before_deploy:
 - git config --local user.name "Travis"
 - git config --local user.email "travis@travis-ci.org"
