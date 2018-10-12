@@ -15,4 +15,4 @@ deploy:
   file: "DAPNET 2.0 Software internals.pdf"
   on:
     repo: dapnet-core/documentation
-    tags: true
+    branches: master
