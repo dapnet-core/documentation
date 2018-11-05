@@ -235,7 +235,7 @@ If not:\\
 Send \verb|403 Forbidden|.
 
 
-\subsubsection{GET /users/\_usernames}
+\subsubsection{GET /users/<usernames}
 \label{protocoldef:microservicesapi:database:getusers/_usernames}
 
 \begin{table}[htbp]
@@ -254,6 +254,25 @@ Send \verb|403 Forbidden|.
 
 \textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
 Send \verb|403 Forbidden|.
+
+\subsubsection{GET /users/<username>/avatar.jpg}
+\label{protocoldef:microservicesapi:database:getusers/username/avatar.jpg}
+
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Return the attachment called avatar.jpg for the given user \\ \hline
+    Permission         & \verb|user.list| \\ \hline
+    Mapping to CouchDB & \verb|GET /users/<username>/avatar.jpg|\\ \hline
+  \end{tabular}
+\end{table}
+
+\textbf{Auth response: \texttt{true}:}
+Get image with Content-Type: image/jpeg
+
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
 
 \newpage
 \subsubsection{PUT /users - Add new user}
@@ -373,6 +392,25 @@ Same behavior as before.
 \textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
 Send \verb|403 Forbidden|.
 
+\subsubsection{PUT /users/<username>/avatar.jpg}
+\label{protocoldef:microservicesapi:database:putusers/username/avatar.jpg}
+
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Set the attachment called avatar.jpg for the given user \\ \hline
+    Permission         & \verb|user.list| \\ \hline
+    Mapping to CouchDB & \verb|PUT /users/<username>/avatar.jpg|\\ \hline
+    Content in body    & Image as raw bytes \\ \hline
+  \end{tabular}
+\end{table}
+
+\textbf{Auth response: \texttt{true}:}\\
+Transparent forwarding.
+
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
 
 \subsubsection{DELETE /users/<username>?rev=<rev>}
 \label{protocoldef:microservicesapi:database:deleteusers}
@@ -381,6 +419,25 @@ Send \verb|403 Forbidden|.
   \begin{tabular}{|l|p{12cm}|} \hline
     Item               & Description  \\ \hline \hline
     Description        & Delete user <username>\\ \hline
+    Permission         & \verb|user.delete/<username>| \\ \hline
+    Mapping to CouchDB & \verb|DELETE /users/<username>/avatar.jpg?rev=<rev>|\\ \hline
+    Mandatory fields   & \verb|rev| as parameter (\verb|rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:getusers/username})\\ \hline
+  \end{tabular}
+\end{table}
+
+\textbf{Auth response: \texttt{true}:}\\
+Transparent forwarding.
+
+\textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
+Send \verb|403 Forbidden|.
+
+\subsubsection{DELETE /users/<username>/avatar.jpg?rev=<rev>}
+\label{protocoldef:microservicesapi:database:deleteuser/avatar.jpg}
+
+\begin{table}[htbp]
+  \begin{tabular}{|l|p{12cm}|} \hline
+    Item               & Description  \\ \hline \hline
+    Description        & Delete the attachment called avatar.jpg for the given user\\ \hline
     Permission         & \verb|user.delete/<username>| \\ \hline
     Mapping to CouchDB & \verb|DELETE /users/<username>?rev=<rev>|\\ \hline
     Mandatory fields   & \verb|rev| as parameter (\verb|rev| has to be obtained as in  \ref{protocoldef:microservicesapi:database:getusers/username})\\ \hline
@@ -392,6 +449,7 @@ Transparent forwarding.
 
 \textbf{Auth response: \texttt{false} or \texttt{limited}:}\\
 Send \verb|403 Forbidden|.
+
 
 \newpage
 \subsubsection{GET /nodes}
@@ -3178,7 +3236,7 @@ The format of the updates is:
 }
 \end{lstlisting}
 
-
+\newpage
 \section{CouchDB Documents and Structure}
 \todo{als Tabelle darstellen}
 
@@ -3210,13 +3268,21 @@ The format of the updates is:
   "_id": "dl1abc",
   "password": "<bcrypt hash>",
   "email": "dl1abc@darc.de",
-  "roles": "admin",
+  "roles": ["admin"],
   "enabled": true,
   "created_on": "2018-07-03T08:00:52.786458Z",
   "created_by": "dh3wr",
   "changed_on": "2018-07-03T08:00:52.786458Z",
   "changed_by":"dh3wr",
   "email_lastchecked": "2018-07-03T08:00:52.786458Z",
+  "defaults": {
+    "subscribers": ["dh3wr",...],
+    "subscriber\_groups": [...],
+    "transmitters": [...],
+    "transmitter\_groups": [...],
+    "expiration\_duration": 120,
+    "priority" : 1 to 5
+  }
   "avatar_picture": <couchdb attachment>
 }
 \end{lstlisting}
