@@ -1753,7 +1753,7 @@ Return all details just of transmitter <transmittername>.
 
 \subsubsection{POST /transmitters/\_bootstrap}
 \label{protcoldef:transmitters:bootstrap}
-\texttt{POST /transmitter/bootstrap}
+\texttt{POST /transmitters/\_bootstrap}
 \begin{lstlisting}
 {
   "callsign": "db0avr",
@@ -1768,8 +1768,6 @@ Return all details just of transmitter <transmittername>.
 \textbf{Answers from the bootstrap REST call}
 The application type shall be \verb|application/json|.
 
-
-\todo{Was mag denn hier der Port sein?}
 \texttt{200 OK}
 \begin{lstlisting}
 {
@@ -1777,7 +1775,6 @@ The application type shall be \verb|application/json|.
   "nodes": [
     {
       "host": "node1.ampr.org",
-      "port": 4000,
       "reachable": true,
       "last_seen": "2018-07-03T07:43:52.783611Z",
       "response_time": 42
@@ -1802,12 +1799,12 @@ The application type shall be \verb|application/json|.
 
 
 \subsubsection{POST /transmitters/\_heartbeat}
-\texttt{POST /transmitter/heartbeat}
+\label{protocoldef:transmitters:heartbeat}
+\texttt{POST /transmitters/\_heartbeat}
 \begin{lstlisting}
 {
   "callsign": "db0avr",
-  "auth_key": "<secretInCleartext>",
-  "ntp_synced": true
+  "auth_key": "<secretInCleartext>"
 }
 \end{lstlisting}
 
@@ -1821,7 +1818,7 @@ The application type shall be \verb|application/json|.
 }
 \end{lstlisting}
 
-If network wants to assign new timeslots without disconnecting (for dynamic timeslots)
+If network wants to assign new timeslots without disconnecting (for dynamic timeslots).
 
 \texttt{200 OK}
 \begin{lstlisting}
@@ -2384,7 +2381,7 @@ The value in \verb|< >| is always the resource to be accessed.\\
 \newpage
 
 \subsection{RabbitMQ Service}
-\label{protocoldef:RabbitMQ}
+\label{protocoldef:RabbitMQ:service}
 
 \subsubsection{GET /rabbitmq/*}
 
@@ -3379,10 +3376,10 @@ The format of the updates is:
   "avatar_picture" : <couchDB attachment>,
   "simplified_coverage_polygon": [34.1, -23.3, 34.1 -23.2, 34.3, -23.3],
   "coverage_edges": [
-  	[lat1, long1],
-  	[lat2, long2],
-  	[lat3, long3],
-  	[lat4, long4]
+    [lat1, long1],
+    [lat2, long2],
+    [lat3, long3],
+    [lat4, long4]
   ]
 }
 \end{lstlisting}

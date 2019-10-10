@@ -189,7 +189,7 @@ The access to the microservices is proxied by a NGINX webserver which can also p
 \item Maintains a database of all calls
 \end{itemize}
 
-The 
+The
 
 \subsection{Rubric Service}
 \begin{itemize}
@@ -247,29 +247,15 @@ for initial announcement of a new transmitter, heartbeat messages and
 transmitter configuration and a RabbitMQ connection to receive the data to be
 transmitted.
 
-The workflow for a transmitter connection is the following:
+The workflow for a new transmitter connection is the following:
 \begin{enumerate}
-\item Announce new connecting transmitter via Core REST Interface (\ref{protcoldef:transmitters:bootstrap}).
-\item Get as response the transmitter configuration or an error message (\ref{protcoldef:transmitters:bootstrap}).
-\item Initiate RabbitMQ connection to get the data to be transmitted (\ref{protocoldef:RabbitMQ:Transmitters}).
+\item Announce the transmitter via a call to the REST API at \texttt{/transmitter/\_bootstrap} (\ref{protcoldef:transmitters:bootstrap}).
+\item The response contains either the transmitter configuration or an error message (\ref{protcoldef:transmitters:bootstrap}).
+\item On success, initiate the RabbitMQ connection to receive calls and send telemetry (\ref{protocoldef:RabbitMQ}).
 \end{enumerate}
 
-The authentication of the transmitter's REST calls consist of the transmitter
-name and its AuthKey, which is checked against the value in the CouchDB for this
-transmitter.
-
-\section{Transmitter connections}
-If a transmitter wants to connect to DAPNET, the first step is to sign-in and
-show its presence via the Core REST interface. This interface is also used for
-transmitter configuration like enabled timeslots and keep-alive polling.
-
-\subsection{Authentication of all HTTP-Requests in this context}
-All HTTP-requests issued from a transmitter have to send a valid HTTP
-authentication, which is checked against the CouchDB. It consists of the
-transmitter name and its AuthKey.
-
-\todo{Da es sich bei den Anfragen um POST-Requests mit JSON Body handelt, wäre
-es einfacher da den AuthKey mit dazu zu packen, so wie es auch schon in der
-Protokoll-Definition umgesetzt ist.}
+After the connection has been established, a periodical heartbeat must be sent
+to the REST API at \texttt{/transmitter/\_heartbeat}
+(\ref{protocoldef:transmitters:heartbeat}).
 
 \section{DAPNET-Proxy}
